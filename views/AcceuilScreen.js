@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+/*import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { UserContext } from './UserC';
 
@@ -50,14 +50,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
-
-
-/*import React, { useContext } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
+*/
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Appbar, Menu, Divider } from 'react-native-paper';
+import { UserContext } from './UserC';
 
 export default function AcceuilScreen({ navigation }) {
-  const { user } = useContext(UserContext); // Extrait l'utilisateur du contexte
+  const { user, logout } = useContext(UserContext);
+  const [visible, setVisible] = useState(false);
+
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
 
   if (!user) {
     console.log('Aucun utilisateur trouvé dans le contexte.');
@@ -68,19 +72,46 @@ export default function AcceuilScreen({ navigation }) {
     );
   }
 
-  console.log('Utilisateur trouvé:', user); // Affiche l'utilisateur dans la console
+  console.log('Utilisateur trouvé:', user);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue, {user.fullName}!</Text>
-      <Button
-        title="Mettre à jour le profil"
-        onPress={() => navigation.navigate('UpdateProfile', { userId: user.id })}
-      />
-      <Button
-        title="Changer le mot de passe"
-        onPress={() => navigation.navigate('ChangePassword', { userId: user.id })}
-      />
+      <Appbar.Header>
+      <View style={styles.appbarTitle}>
+          <Text style={styles.title}> {user.fullName}!</Text>
+        </View>
+       
+        <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
+          style={styles.menu}
+        >
+          <Menu.Item
+            title="Mettre à jour le profil"
+            onPress={() => {
+              closeMenu();
+              navigation.navigate('UpdateProfile', { userId: user.id });
+            }}
+          />
+          <Menu.Item
+            title="Changer le mot de passe"
+            onPress={() => {
+              closeMenu();
+              navigation.navigate('ChangePassword', { userId: user.id });
+            }}
+          />
+          <Divider />
+          <Menu.Item
+            title="Se déconnecter"
+            onPress={async () => {
+              closeMenu();
+              await logout();
+              navigation.navigate('Signin'); // Vérifiez que le nom de l'écran de connexion est correct
+            }}
+          />
+        </Menu>
+      </Appbar.Header>
     </View>
   );
 }
@@ -88,56 +119,23 @@ export default function AcceuilScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  menu: {
+    marginTop: 56, // Ajustez la valeur pour aligner le menu avec l'Appbar
+  },
+  mainContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+  },
+  appbarTitle: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start', // Aligner à gauche
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
   },
 });
-*/
-
-/*import React, { useContext } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
-
-export default function AcceuilScreen({ navigation }) {
-  const { user } = useContext(UserContext); // Extrait l'utilisateur du contexte
-
-  // Vérifiez si l'utilisateur est défini
-  if (!user) {
-    console.log('Aucun utilisateur trouvé dans le contexte.');
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Chargement...</Text>
-      </View>
-    );
-  }
-
-  console.log('Utilisateur trouvé:', user); // Affiche l'utilisateur dans la console
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue, {user.fullName}!</Text>
-      <Button
-        title="Mettre à jour le profil"
-        onPress={() => navigation.navigate('UpdateProfile', { userId: user.id })} // Passe l'ID de l'utilisateur
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-});*/
