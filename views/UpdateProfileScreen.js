@@ -2,13 +2,13 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Image,
   Animated,
   Easing,
 } from 'react-native';
+import { TextInput as PaperTextInput } from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
 import { UserContext } from './UserC';
 import { updateProfile } from '../services/UserService';
@@ -88,7 +88,7 @@ export default function UpdateProfileScreen({ route }) {
 
   return (
     <LinearGradient
-      colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+      colors={[ '#507BE4','#37A9B4','#5CC7D2','#89A6ED',  ]}
       style={styles.container}
     >
       <View style={styles.imageContainer}>
@@ -115,27 +115,37 @@ export default function UpdateProfileScreen({ route }) {
         <View style={styles.content}>
           <Text style={styles.title}>Update Profile</Text>
 
-          <TextInput
+          <PaperTextInput
             style={styles.input}
             placeholder="Full Name"
             value={fullName}
             onChangeText={setFullName}
+            label="Full Name"
+            mode="outlined"
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
           />
 
-          <TextInput
+          <PaperTextInput
             style={styles.input}
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            label="Email"
+            mode="outlined"
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
           />
 
-          <TextInput
+          <PaperTextInput
             style={styles.input}
             placeholder="Phone Number"
             value={telephone}
             onChangeText={setTelephone}
             keyboardType="phone-pad"
             maxLength={15}
+            label="Phone Number"
+            mode="outlined"
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
           />
 
           <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
@@ -173,7 +183,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    alignItems: 'center',
+    alignItems: 'left',
     marginTop: 20,
   },
   userImage: {
@@ -203,11 +213,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
     marginBottom: 15,
-    borderRadius: 5,
   },
   button: {
     marginBottom: 10,

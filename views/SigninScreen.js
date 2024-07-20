@@ -465,6 +465,7 @@ const styles = StyleSheet.create({
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
+import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 import { signin } from '../services/UserService';
 import { jwtDecode } from 'jwt-decode';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
@@ -515,7 +516,7 @@ export default function SigninScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ImageBackground source={require('../assets/cc.png')} style={styles.background}>
-      <Text style={styles.heading}>Connectez-vous !</Text>
+        <Text style={styles.heading}>Connectez-vous !</Text>
         <View style={styles.formContainer}>
           <PaperTextInput
             style={styles.input}
@@ -539,23 +540,30 @@ export default function SigninScreen({ navigation }) {
             theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
           />
 
-          <PaperButton
-            mode="contained"
-            onPress={handleSignin}
-            style={styles.button}
-            contentStyle={styles.buttonContent} // Style the button's content
-          >
-            Se connecter
-          </PaperButton>
+          <TouchableOpacity style={styles.button} onPress={handleSignin}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>Se connecter</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.signUpButton}
-            onPress={() => navigation.navigate('Signup')} // Handle sign-up action
+            onPress={() => navigation.navigate('Signup')}
           >
-            <Text style={styles.signUpButtonText}>
+            <View style={styles.signUpContainer}>
               <Text style={styles.blackText}>Vous n'avez pas de compte ? </Text>
-              <Text style={styles.blueText}>S'inscrire</Text>
-            </Text>
+              <LinearGradient
+                colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientTextContainer}
+              >
+                <Text style={styles.gradientText}>S'inscrire</Text>
+              </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -577,48 +585,59 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 200, 
+    marginTop: 200,
   },
   heading: {
-    fontSize: 24, // Adjust font size as needed
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#3FA9ED', // Adjust text color if needed
+    color: '#3FA9ED',
     marginBottom: 16,
-    alignItems:'center'
-     // Space between heading and input field
+    alignItems: 'center',
   },
   input: {
     height: 50,
     marginBottom: 29,
     width: '100%',
   },
-  button: {
+    button: {
+    marginTop: 20,
+  },
+ /* button: {
     marginTop: 16,
-    backgroundColor: '#0170B8',
+    borderRadius: 200,
     paddingVertical: 12,
     paddingHorizontal: 74,
-    borderRadius: 250,
     height: 64,
     justifyContent: 'center',
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  },*/
+  gradientButton: {
+    borderRadius: 200,
+    padding: 15,
     alignItems: 'center',
+    width: 320,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
   },
   signUpButton: {
     marginTop: 20,
   },
-  signUpButtonText: {
-    color: 'black',
+  signUpContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   blackText: {
     color: 'black',
   },
-
-  blueText: {
-    color: 'blue',
+  gradientTextContainer: {
+    padding: 5,
+    borderRadius: 5,
+  },
+  gradientText: {
+    fontSize: 22,
     fontWeight: 'bold',
-    fontSize:22
+    color: 'white',
+    textAlign: 'center',
   },
 });
