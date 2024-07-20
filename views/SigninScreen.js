@@ -466,7 +466,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
 import { signin } from '../services/UserService';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 import UserModel from '../models/User';
 

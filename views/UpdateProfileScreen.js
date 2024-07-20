@@ -1,15 +1,24 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image } from 'react-native';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Animated,
+  Easing,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { UserContext } from './UserC';
 import { updateProfile } from '../services/UserService';
 import { launchImageLibrary } from 'react-native-image-picker';
 import UserModel from '../models/User';
 
 export default function UpdateProfileScreen({ route }) {
-  const { userId } = route.params; // Récupérez l'ID de l'utilisateur passé
+  const { userId } = route.params;
   const { user } = useContext(UserContext);
-  
-  // Vérifiez si l'utilisateur existe
+
   if (!user) {
     return (
       <View style={styles.container}>
@@ -18,23 +27,30 @@ export default function UpdateProfileScreen({ route }) {
     );
   }
 
-  // Créez une instance de UserModel
   const currentUser = new UserModel(
     user.id,
     user.fullName,
     user.email,
-    user.telephone ? String(user.telephone) : '', // Convertir en chaîne
-    user.image,
+    String(user.telephone || ''),
+    user.image || null,
     user.role
   );
-  
- // Vérifiez ici
-  
 
-  const [fullName, setFullName] = useState(currentUser.fullName);
-  const [email, setEmail] = useState(currentUser.email);
-  const [telephone, setTelephone] = useState(currentUser.telephone || '');
-  const [image, setImage] = useState(null);
+  const [fullName, setFullName] = useState(currentUser.fullName || '');
+  const [email, setEmail] = useState(currentUser.email || '');
+  const [telephone, setTelephone] = useState(String(currentUser.telephone || ''));
+  const [image, setImage] = useState(currentUser.image || null);
+
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 500,
+      easing: Easing.inOut(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleImagePicker = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -43,7 +59,7 @@ export default function UpdateProfileScreen({ route }) {
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else {
-        setImage(response.assets[0]);
+        setImage(response.assets[0].uri);
       }
     });
   };
@@ -57,9 +73,9 @@ export default function UpdateProfileScreen({ route }) {
 
       if (image) {
         formData.append('source', {
-          uri: image.uri,
-          type: image.type,
-          name: image.fileName || 'photo.jpg',
+          uri: image,
+          type: 'image/jpeg', // Adjust type if needed
+          name: 'photo.jpg',
         });
       }
 
@@ -71,52 +87,139 @@ export default function UpdateProfileScreen({ route }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Nom complet :</Text>
-      <TextInput 
-        value={fullName} 
-        onChangeText={setFullName} 
-        style={styles.input}
-      />
-      <Text>Adresse e-mail :</Text>
-      <TextInput 
-        value={email} 
-        onChangeText={setEmail} 
-        style={styles.input} 
-      />
-      <Text>Numéro de téléphone :</Text>
-      <TextInput 
-        value={telephone} 
-        onChangeText={setTelephone} 
-        style={styles.input} 
-        keyboardType="phone-pad" // Définit le clavier pour les numéros de téléphone
-        maxLength={15} // Limite la longueur du numéro
-      />
-      
-      <Button title="Choisir une image" onPress={handleImagePicker} />
-      
-      {image && (
+    <LinearGradient
+      colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+      style={styles.container}
+    >
+      <View style={styles.imageContainer}>
         <Image
-          source={{ uri: image.uri }}
-          style={{ width: 100, height: 100, marginVertical: 10 }}
+          source={image && image !== '' ? { uri: image } : require('../assets/userr.png')}
+          style={styles.userImage}
         />
-      )}
+      </View>
+      <Animated.View
+        style={[
+          styles.background,
+          {
+            transform: [
+              {
+                translateY: animatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 120],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>Update Profile</Text>
 
-      <Button title="Mettre à jour le profil" onPress={handleUpdateProfile} />
-    </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            value={telephone}
+            onChangeText={setTelephone}
+            keyboardType="phone-pad"
+            maxLength={15}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>Choose Image</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {image && (
+            <Image
+              source={{ uri: image }}
+              style={{ width: 100, height: 100, marginVertical: 10 }}
+            />
+          )}
+
+          <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>Update Profile</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  userImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
+  background: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    padding: 30,
+  },
+  content: {
+    // Suppression du padding ici, car il est maintenant dans .background
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
     borderWidth: 1,
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 5,
+  },
+  button: {
+    marginBottom: 10,
+  },
+  gradientButton: {
+    borderRadius: 200,
+    padding: 15,
+    width: 320,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 18,
   },
 });
