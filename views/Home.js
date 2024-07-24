@@ -41,7 +41,7 @@ const Home = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('Signin')} // Changez 'SigninViewModel' en 'Signin'
+          onPress={() => navigation.navigate('Signin')} 
         >
           <LinearGradient
             colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
@@ -91,23 +91,23 @@ const styles = StyleSheet.create({
     bottom: 30,
     left: 0,
     right: 0,
-    alignItems: 'center', // Center the buttons
-    justifyContent: 'space-between', // Space between buttons
-    height: 115, // Height for spacing
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    height: 115, 
   },
   gradientButton: {
     borderRadius: 200,
     padding: 15,
-    width: 320, // Set a fixed width for the buttons
+    width: 320,
   },
   button: {
     borderRadius: 77,
-    overflow: 'hidden', // To round the edges
+    overflow: 'hidden',
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    textAlign: 'center', // Center text
+    textAlign: 'center', 
   },
 });
 

@@ -465,16 +465,16 @@ const styles = StyleSheet.create({
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
-import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
+import LinearGradient from 'react-native-linear-gradient'; 
 import { signin } from '../services/UserService';
 import { jwtDecode } from 'jwt-decode';
-import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
+import { UserContext } from './UserC'; 
 import UserModel from '../models/User';
 
 export default function SigninScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useContext(UserContext); // Utilisez seulement 'login'
+  const { login } = useContext(UserContext); 
 
   const handleSignin = async () => {
     try {
@@ -502,7 +502,7 @@ export default function SigninScreen({ navigation }) {
         currentUser.role || 'tourist'
       );
 
-      await login(userModel, token); // Utilisez la fonction de login
+      await login(userModel, token); 
 
       navigation.navigate('Acceuil', { userId: userModel.id });
     } catch (error) {

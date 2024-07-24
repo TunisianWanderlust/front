@@ -74,7 +74,7 @@ export default function UpdateProfileScreen({ route }) {
       if (image) {
         formData.append('source', {
           uri: image,
-          type: 'image/jpeg', // Adjust type if needed
+          type: 'image/jpeg', 
           name: 'photo.jpg',
         });
       }
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     padding: 30,
   },
   content: {
-    // Suppression du padding ici, car il est maintenant dans .background
+    
   },
   title: {
     fontSize: 24,

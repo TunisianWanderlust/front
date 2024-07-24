@@ -107,7 +107,7 @@ export default function AcceuilScreen({ navigation }) {
             onPress={async () => {
               closeMenu();
               await logout();
-              navigation.navigate('Signin'); // Vérifiez que le nom de l'écran de connexion est correct
+              navigation.navigate('Signin');
             }}
           />
         </Menu>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menu: {
-    marginTop: 56, // Ajustez la valeur pour aligner le menu avec l'Appbar
+    marginTop: 56, 
   },
   mainContent: {
     flex: 1,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   appbarTitle: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'flex-start', // Aligner à gauche
+    alignItems: 'flex-start', 
   },
   title: {
     fontSize: 24,

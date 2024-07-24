@@ -23,7 +23,6 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  // Charger l'utilisateur et le token depuis AsyncStorage
   useEffect(() => {
     const loadUserData = async () => {
       const storedUser = await AsyncStorage.getItem('user');
@@ -40,7 +39,6 @@ export const UserProvider = ({ children }) => {
     loadUserData();
   }, []);
 
-  // Fonction de connexion
   const login = async (userData, token) => {
     setUser(userData);
     setToken(token);
@@ -48,7 +46,6 @@ export const UserProvider = ({ children }) => {
     await AsyncStorage.setItem('token', token);
   };
 
-  // Fonction de déconnexion
   const logout = async () => {
     setUser(null);
     setToken(null);

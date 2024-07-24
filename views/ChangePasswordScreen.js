@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Animated,
   Easing,
-  TouchableOpacity, // Importing TouchableOpacity
+  TouchableOpacity, 
 } from 'react-native';
 import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
