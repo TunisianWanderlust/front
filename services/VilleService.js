@@ -2,6 +2,15 @@ import axios from "axios";
 
 const API_BASE_URL = 'http://192.168.1.15:9090';
 
+export const getVilles = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/ville`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des villes :', error.message);
+      throw new Error(error.response.data.message || 'Erreur lors de la récupération des villes');
+    }
+  };
 export const getVilleByNom = async (nom) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/ville/nom/${nom}`);
@@ -13,6 +22,7 @@ export const getVilleByNom = async (nom) => {
 };
 
 export default {
+    getVilles,
     getVilleByNom,
 };
 
