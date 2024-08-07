@@ -7,14 +7,13 @@ import {
   Easing,
   TouchableOpacity, 
 } from 'react-native';
-import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
+import { TextInput as PaperTextInput } from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
 import { UserContext } from './UserC';
 import { changePassword } from '../services/UserService';
 
-export default function ChangePasswordScreen({ route }) {
+export default function ChangePasswordScreen({ route, navigation }) {
   const { userId } = route.params;
-
   const { user } = useContext(UserContext);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -35,6 +34,7 @@ export default function ChangePasswordScreen({ route }) {
     try {
       const response = await changePassword(userId, { oldPassword, newPassword, confirmPassword });
       console.log(response);
+      navigation.navigate('Acceuil'); // Navigate to Acceuil after success
     } catch (error) {
       console.error('Erreur lors du changement de mot de passe :', error.message);
     }
@@ -42,7 +42,7 @@ export default function ChangePasswordScreen({ route }) {
 
   return (
     <LinearGradient
-    colors={[ '#507BE4','#37A9B4','#5CC7D2','#89A6ED',  ]}
+      colors={['#507BE4', '#37A9B4', '#5CC7D2', '#89A6ED']}
       style={styles.container}
     >
       <Animated.View
