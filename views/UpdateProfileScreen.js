@@ -52,6 +52,14 @@ export default function UpdateProfileScreen({ route }) {
     }).start();
   }, []);
 
+  useEffect(() => {
+    if (user && user.image) {
+      setImage(user.image);
+    } else {
+      setImage(null);
+    }
+  }, [user]);
+
   const handleImagePicker = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
       if (response.didCancel) {
@@ -59,6 +67,7 @@ export default function UpdateProfileScreen({ route }) {
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else {
+        console.log('Image URI: ', response.assets[0].uri); // Vérifiez l'URL ici
         setImage(response.assets[0].uri);
       }
     });
@@ -74,7 +83,7 @@ export default function UpdateProfileScreen({ route }) {
       if (image) {
         formData.append('source', {
           uri: image,
-          type: 'image/jpeg', 
+          type: 'image/jpeg',
           name: 'photo.jpg',
         });
       }
@@ -88,12 +97,12 @@ export default function UpdateProfileScreen({ route }) {
 
   return (
     <LinearGradient
-      colors={[ '#507BE4','#37A9B4','#5CC7D2','#89A6ED',  ]}
+      colors={['#507BE4', '#37A9B4', '#5CC7D2', '#89A6ED']}
       style={styles.container}
     >
       <View style={styles.imageContainer}>
         <Image
-          source={image && image !== '' ? { uri: image } : require('../assets/userr.png')}
+          source={image ? { uri: image } : require('../assets/userr.png')}
           style={styles.userImage}
         />
       </View>
@@ -183,7 +192,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    alignItems: 'left',
+    alignItems: 'center',
     marginTop: 20,
   },
   userImage: {
@@ -204,7 +213,7 @@ const styles = StyleSheet.create({
     padding: 30,
   },
   content: {
-    
+    // Styles pour le conteneur de contenu
   },
   title: {
     fontSize: 24,
