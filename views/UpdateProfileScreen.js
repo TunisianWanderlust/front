@@ -14,10 +14,12 @@ import { UserContext } from './UserC';
 import { updateProfile } from '../services/UserService';
 import { launchImageLibrary } from 'react-native-image-picker';
 import UserModel from '../models/User';
+import { useNavigation } from '@react-navigation/native'; // Importez le hook useNavigation
 
 export default function UpdateProfileScreen({ route }) {
   const { userId } = route.params;
   const { user } = useContext(UserContext);
+  const navigation = useNavigation(); // Utilisez le hook useNavigation
 
   if (!user) {
     return (
@@ -89,6 +91,9 @@ export default function UpdateProfileScreen({ route }) {
 
       const successMessage = await updateProfile(userId, formData, user.token);
       console.log(successMessage);
+
+      // Navigation vers AcceuilScreen après la mise à jour
+      navigation.navigate('Acceuil');
     } catch (error) {
       console.error('Erreur lors de la mise à jour :', error.message);
     }

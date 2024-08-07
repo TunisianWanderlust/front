@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground } from 'react-native';
 import { Appbar, Menu, Divider, ActivityIndicator } from 'react-native-paper';
 import { UserContext } from './UserC';
 import { Picker } from '@react-native-picker/picker';
@@ -24,8 +24,11 @@ export default function AcceuilScreen({ navigation }) {
       try {
         const data = await getVilles();
         setVilles(data);
-        if (data.length > 0) {
-          setSelectedVille(data[0]._id); // Assurez-vous que la première ville est sélectionnée par défaut
+
+        // Assurez-vous que l'ID de Tunis est utilisé comme valeur par défaut
+        const tunisVille = data.find(ville => ville.nom.toLowerCase() === 'tunis');
+        if (tunisVille) {
+          setSelectedVille(tunisVille._id);
         }
       } catch (err) {
         setError('Erreur lors de la récupération des villes : ' + err.message);
@@ -106,74 +109,74 @@ export default function AcceuilScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header style={styles.appbarHeader}>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedVille}
-            onValueChange={(itemValue) => setSelectedVille(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Sélectionner une ville" value="" />
-            {villes.map((ville) => (
-              <Picker.Item key={ville._id} label={ville.nom} value={ville._id} />
-            ))}
-          </Picker>
-        </View>
-
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
-          style={styles.menu}
+      {villeDetails && villeDetails.image && (
+        <ImageBackground 
+          source={{ uri: villeDetails.image }} 
+          style={styles.backgroundImage}
+          onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
         >
-          <Menu.Item
-            title="Paramètre"
-            onPress={handleSettings}
-          />
-          {showSubMenu && (
-            <>
-              <Menu.Item
-                title="Mettre à jour le profil"
-                onPress={() => {
-                  closeMenu();
-                  navigation.navigate('UpdateProfile', { userId: user.id });
-                }}
-                style={styles.subMenuItem}
-              />
-              <Menu.Item
-                title="Changer le mot de passe"
-                onPress={() => {
-                  closeMenu();
-                  navigation.navigate('ChangePassword', { userId: user.id });
-                }}
-                style={styles.subMenuItem}
-              />
-              <Divider />
-            </>
-          )}
-          <Menu.Item
-            title="Se déconnecter"
-            onPress={async () => {
-              closeMenu();
-              await logout();
-              navigation.navigate('Signin');
-            }}
-          />
-        </Menu>
-      </Appbar.Header>
+          <Appbar.Header style={styles.appbarHeader}>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedVille}
+                onValueChange={(itemValue) => setSelectedVille(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Sélectionner une ville" value="" />
+                {villes.map((ville) => (
+                  <Picker.Item key={ville._id} label={ville.nom} value={ville._id} />
+                ))}
+              </Picker>
+            </View>
 
-      {loading && <ActivityIndicator size="large" color="#0000ff" />}
-      {error && <Text style={styles.error}>{error}</Text>}
-      {villeDetails && (
-        <ScrollView style={styles.villeContainer}>
-          <Text style={styles.villeNom}>{villeDetails.nom}</Text>
-          <Image 
-            source={{ uri: villeDetails.image }} 
-            style={styles.villeImage} 
-            onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
-          />
-          <Text style={styles.villeDescription}>{villeDetails.description}</Text>
-        </ScrollView>
+            <Menu
+              visible={visible}
+              onDismiss={closeMenu}
+              anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
+              style={styles.menu}
+            >
+              <Menu.Item
+                title="Paramètre"
+                onPress={handleSettings}
+              />
+              {showSubMenu && (
+                <>
+                  <Menu.Item
+                    title="Mettre à jour le profil"
+                    onPress={() => {
+                      closeMenu();
+                      navigation.navigate('UpdateProfile', { userId: user.id });
+                    }}
+                    style={styles.subMenuItem}
+                  />
+                  <Menu.Item
+                    title="Changer le mot de passe"
+                    onPress={() => {
+                      closeMenu();
+                      navigation.navigate('ChangePassword', { userId: user.id });
+                    }}
+                    style={styles.subMenuItem}
+                  />
+                  <Divider />
+                </>
+              )}
+              <Menu.Item
+                title="Se déconnecter"
+                onPress={async () => {
+                  closeMenu();
+                  await logout();
+                  navigation.navigate('Signin');
+                }}
+              />
+            </Menu>
+          </Appbar.Header>
+
+          {loading && <ActivityIndicator size="large" color="#0000ff" />}
+          {error && <Text style={styles.error}>{error}</Text>}
+          <ScrollView contentContainerStyle={styles.villeContainer}>
+            <Text style={styles.villeDescription}>{villeDetails.description}</Text>
+          </ScrollView>
+        </ImageBackground>
       )}
     </View>
   );
@@ -182,6 +185,11 @@ export default function AcceuilScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover', // Utiliser le mode de redimensionnement approprié
+    justifyContent: 'center', // Centrer le contenu si nécessaire
   },
   appbarHeader: {
     height: 56,
@@ -207,23 +215,16 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   villeContainer: {
+    flex: 1,
+    justifyContent: 'center', // Centrer verticalement le contenu
+    alignItems: 'center', // Centrer horizontalement le contenu
     padding: 16,
-  },
-  villeNom: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
   },
   villeDescription: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'center', // Centrer le texte horizontalement
     marginBottom: 8,
-  },
-  villeImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-    marginBottom: 16,
   },
   error: {
     color: 'red',
