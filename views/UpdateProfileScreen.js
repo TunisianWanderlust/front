@@ -53,10 +53,10 @@ export default function UpdateProfileScreen({ route }) {
   }, []);
 
   useEffect(() => {
-    if (user && user.image) {
+    if (user && user.image && user.image.startsWith('http')) {
       setImage(user.image);
     } else {
-      setImage(null);
+      setImage(null); // Utiliser une image par défaut si l'URL est incorrecte
     }
   }, [user]);
 
@@ -67,7 +67,6 @@ export default function UpdateProfileScreen({ route }) {
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else {
-        console.log('Image URI: ', response.assets[0].uri); // Vérifiez l'URL ici
         setImage(response.assets[0].uri);
       }
     });
