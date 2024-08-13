@@ -10,6 +10,7 @@ import SignupScreen from './views/signupScreen';
 import AcceuilScreen from './views/AcceuilScreen';
 import UpdateProfileScreen from './views/UpdateProfileScreen';
 import ChangePasswordScreen from './views/ChangePasswordScreen';
+import PublicationList from './views/PublicationList';
 
 const Stack = createStackNavigator();
 
@@ -30,6 +31,7 @@ const App = () => {
             <Stack.Screen name="Acceuil" component={AcceuilScreen} />
             <Stack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
             <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+            <Stack.Screen name="PublicationList" component={PublicationList} /> 
           </Stack.Navigator>
         </NavigationContainer>
       </UserProvider>

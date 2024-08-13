@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, Button } from 'react-native';
 import { Appbar, Menu, Divider, ActivityIndicator } from 'react-native-paper';
 import { UserContext } from './UserC';
 import { Picker } from '@react-native-picker/picker';
@@ -175,6 +175,12 @@ export default function AcceuilScreen({ navigation }) {
           {error && <Text style={styles.error}>{error}</Text>}
           <ScrollView contentContainerStyle={styles.villeContainer}>
             <Text style={styles.villeDescription}>{villeDetails.description}</Text>
+            <Button 
+              title="Voir les publications" 
+              onPress={() => navigation.navigate('PublicationList', { nomVille: villeDetails.nom })} 
+              style={styles.button}
+            />
+
           </ScrollView>
         </ImageBackground>
       )}
@@ -228,6 +234,9 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
+  },
+  button: {
+    marginTop: 20,
   },
 });
 
