@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, TextInput, Button } from 'react-native';
 import { getPublicationsByNomVille } from '../services/PublicationService';
-import { getCommentsByPublication, addComment } from '../services/CommentService';
+import { getCommentsByPublication, addComment, deleteComment } from '../services/CommentService';
 import { UserContext } from './UserC';
 
 export default function PublicationList({ route, navigation }) {
@@ -72,6 +72,16 @@ export default function PublicationList({ route, navigation }) {
     }
   };
 
+  const handleDeleteComment = async (commentId, publicationId) => {
+    try {
+      await deleteComment(commentId);
+      // Refetch comments for the updated publication
+      await handleExpandComments(publicationId);
+    } catch (err) {
+      console.error('Erreur lors de la suppression du commentaire :', err.message);
+    }
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
   }
@@ -135,6 +145,14 @@ export default function PublicationList({ route, navigation }) {
                           <Image source={{ uri: 'https://via.placeholder.com/30' }} style={styles.commentUserImage} />
                         )}
                         <Text style={styles.commentUserName}>{comment.userId.fullName}</Text>
+                        {user && user.id === comment.userId._id && ( // Show delete button only if the user is the author of the comment
+                          <TouchableOpacity 
+                            style={styles.deleteButton} 
+                            onPress={() => handleDeleteComment(comment._id, item._id)}
+                          >
+                            <Text style={styles.deleteButtonText}>Supprimer</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                       <Text style={styles.commentText}>{comment.text}</Text>
                     </View>
@@ -158,12 +176,6 @@ export default function PublicationList({ route, navigation }) {
       />
       <TouchableOpacity style={styles.createPostButton} onPress={() => navigation.navigate('CreatePublication')}>
         <Text style={styles.createPostButtonText}>Créer une publication</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.goBackButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.goBackButtonText}>Retour à l'accueil</Text>
       </TouchableOpacity>
     </View>
   );
@@ -204,7 +216,6 @@ const styles = StyleSheet.create({
   },
   publicationDate: {
     color: '#888',
-    fontSize: 12,
   },
   publicationImage: {
     width: '100%',
@@ -213,8 +224,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   noImageText: {
+    textAlign: 'center',
+    marginVertical: 10,
     color: '#888',
-    fontStyle: 'italic',
   },
   description: {
     marginBottom: 10,
@@ -225,20 +237,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   likeButton: {
-    backgroundColor: '#ddd',
-    padding: 5,
+    backgroundColor: '#007bff',
+    padding: 10,
     borderRadius: 5,
   },
   likeText: {
-    color: '#000',
+    color: '#fff',
   },
   commentButton: {
-    backgroundColor: '#ddd',
-    padding: 5,
+    backgroundColor: '#007bff',
+    padding: 10,
     borderRadius: 5,
   },
   commentText: {
-    color: '#000',
+    color: '#fff',
   },
   commentsSection: {
     marginTop: 10,
@@ -246,8 +258,7 @@ const styles = StyleSheet.create({
   commentCard: {
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    paddingBottom: 10,
-    marginBottom: 10,
+    paddingVertical: 5,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -262,11 +273,22 @@ const styles = StyleSheet.create({
   },
   commentUserName: {
     fontWeight: 'bold',
+    marginRight: 10,
+  },
+  deleteButton: {
+    marginLeft: 'auto',
+    backgroundColor: '#dc3545',
+    padding: 5,
+    borderRadius: 5,
+  },
+  deleteButtonText: {
+    color: '#fff',
   },
   commentText: {
-    marginTop: 5,
+    marginLeft: 40,
   },
   noCommentsText: {
+    textAlign: 'center',
     color: '#888',
   },
   addCommentSection: {
@@ -275,35 +297,42 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     flex: 1,
-    borderWidth: 1,
     borderColor: '#ddd',
+    borderWidth: 1,
     borderRadius: 5,
     padding: 5,
     marginRight: 10,
   },
   createPostButton: {
     backgroundColor: '#007bff',
-    padding: 10,
+    padding: 15,
     borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
   createPostButtonText: {
     color: '#fff',
+    textAlign: 'center',
     fontWeight: 'bold',
   },
   goBackButton: {
     backgroundColor: '#6c757d',
-    padding: 10,
+    padding: 15,
     borderRadius: 5,
-    alignItems: 'center',
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
   },
   goBackButtonText: {
     color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   error: {
     color: 'red',

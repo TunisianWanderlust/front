@@ -34,9 +34,19 @@ export const deleteComment = async (commentId) => {
     throw new Error(error.response.data.message || 'Erreur lors de la suppression du commentaire');
   }
 };
+export const updateComment = async (commentId, updatedText) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/comment/${commentId}`, { text: updatedText });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du commentaire :', error.message);
+      throw new Error(error.response.data.message || 'Erreur lors de la mise à jour du commentaire');
+    }
+  };
 
 export default {
   addComment,
   getCommentsByPublication,
   deleteComment,
+  updateComment,
 };
