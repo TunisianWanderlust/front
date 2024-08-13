@@ -12,7 +12,17 @@ export const getPublicationsByNomVille = async (nomVille) => {
     throw new Error(error.response.data.message || 'Erreur lors de la récupération des publications');
   }
 };
+export const deletePublication = async (publicationId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/publication/${publicationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la publication :', error.message);
+      throw new Error(error.response.data.message || 'Erreur lors de la suppression de la publication');
+    }
+  };
 
 export default {
   getPublicationsByNomVille,
+  deletePublication,
 };

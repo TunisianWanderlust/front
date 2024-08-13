@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, TextInput, Button } from 'react-native';
-import { getPublicationsByNomVille } from '../services/PublicationService';
+import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, TextInput, Button, Alert } from 'react-native';
+import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
 import { getCommentsByPublication, addComment, deleteComment, updateComment } from '../services/CommentService';
 import { UserContext } from './UserC';
 
@@ -15,7 +15,7 @@ export default function PublicationList({ route, navigation }) {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
 
-  const { user } = useContext(UserContext); // Utilisez le contexte pour obtenir les informations de l'utilisateur connecté
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchPublications = async () => {
@@ -34,14 +34,14 @@ export default function PublicationList({ route, navigation }) {
 
   const handleExpandComments = async (publicationId) => {
     if (expandedPublicationId === publicationId) {
-      setExpandedPublicationId(null); // Collapse if already expanded
+      setExpandedPublicationId(null);
       return;
     }
 
     try {
       const data = await getCommentsByPublication(publicationId);
       setComments(prev => ({ ...prev, [publicationId]: data }));
-      setExpandedPublicationId(publicationId); // Expand comments for this publication
+      setExpandedPublicationId(publicationId);
     } catch (err) {
       console.error('Erreur lors de la récupération des commentaires :', err.message);
     }
@@ -61,13 +61,12 @@ export default function PublicationList({ route, navigation }) {
     const newComment = {
       publicationId,
       text: commentText,
-      userId: user.id // Utilisez l'ID de l'utilisateur connecté
+      userId: user.id
     };
 
     try {
       await addComment(newComment);
-      setCommentText(''); // Clear the input field
-      // Refetch comments for the updated publication
+      setCommentText('');
       await handleExpandComments(publicationId);
     } catch (err) {
       console.error('Erreur lors de l\'ajout du commentaire :', err.message);
@@ -77,7 +76,6 @@ export default function PublicationList({ route, navigation }) {
   const handleDeleteComment = async (commentId, publicationId) => {
     try {
       await deleteComment(commentId);
-      // Refetch comments for the updated publication
       await handleExpandComments(publicationId);
     } catch (err) {
       console.error('Erreur lors de la suppression du commentaire :', err.message);
@@ -92,13 +90,37 @@ export default function PublicationList({ route, navigation }) {
 
     try {
       await updateComment(commentId, editCommentText);
-      setEditingCommentId(null); // Exit edit mode
-      setEditCommentText(''); // Clear the input field
-      // Refetch comments for the updated publication
+      setEditingCommentId(null);
+      setEditCommentText('');
       await handleExpandComments(publicationId);
     } catch (err) {
       console.error('Erreur lors de la mise à jour du commentaire :', err.message);
     }
+  };
+
+  const handleDeletePublication = async (publicationId) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      'Êtes-vous sûr de vouloir supprimer cette publication ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          onPress: async () => {
+            try {
+              await deletePublication(publicationId);
+              setPublications(prev => prev.filter(pub => pub._id !== publicationId));
+            } catch (err) {
+              console.error('Erreur lors de la suppression de la publication :', err.message);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   if (loading) {
@@ -149,31 +171,33 @@ export default function PublicationList({ route, navigation }) {
               >
                 <Text style={styles.commentText}>Commenter</Text>
               </TouchableOpacity>
+              {user && user.id === item.userId._id && (
+                <TouchableOpacity
+                  style={styles.deletePublicationButton}
+                  onPress={() => handleDeletePublication(item._id)}
+                >
+                  <Text style={styles.deletePublicationButtonText}>Supprimer</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
-            {/* Display Comments */}
-            {expandedPublicationId === item._id && comments[item._id] && (
+            {/* Comments Section */}
+            {expandedPublicationId === item._id && (
               <View style={styles.commentsSection}>
-                {comments[item._id].length > 0 ? (
-                  comments[item._id].map(comment => (
+                {comments[item._id] && comments[item._id].length > 0 ? (
+                  comments[item._id].map((comment) => (
                     <View key={comment._id} style={styles.commentCard}>
                       <View style={styles.commentHeader}>
                         {comment.userId.image ? (
-                          <Image source={{ uri: comment.userId.image.replace('127.0.0.1', '192.168.1.21') }} style={styles.commentUserImage} />
+                          <Image source={{ uri: comment.userId.image.replace('127.0.0.1', '192.168.1.21') }} style={styles.userImage} />
                         ) : (
-                          <Image source={{ uri: 'https://via.placeholder.com/30' }} style={styles.commentUserImage} />
+                          <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.userImage} />
                         )}
-                        <Text style={styles.commentUserName}>{comment.userId.fullName}</Text>
-                        {user && user.id === comment.userId._id && ( // Show delete and edit buttons only if the user is the author of the comment
-                          <View style={styles.editDeleteButtons}>
-                            <TouchableOpacity 
-                              style={styles.deleteButton} 
-                              onPress={() => handleDeleteComment(comment._id, item._id)}
-                            >
-                              <Text style={styles.deleteButtonText}>Supprimer</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                              style={styles.editButton} 
+                        <View style={styles.userInfo}>
+                          <Text style={styles.userName}>{comment.userId.fullName}</Text>
+                          {user && user.id === comment.userId._id && (
+                            <TouchableOpacity
+                              style={styles.editButton}
                               onPress={() => {
                                 setEditingCommentId(comment._id);
                                 setEditCommentText(comment.text);
@@ -181,36 +205,38 @@ export default function PublicationList({ route, navigation }) {
                             >
                               <Text style={styles.editButtonText}>Modifier</Text>
                             </TouchableOpacity>
-                          </View>
-                        )}
+                          )}
+                        </View>
                       </View>
-                      {editingCommentId === comment._id ? (
+                      <Text>{comment.text}</Text>
+                      {editingCommentId === comment._id && (
                         <View style={styles.editCommentSection}>
                           <TextInput
                             style={styles.commentInput}
-                            placeholder="Modifier le commentaire..."
                             value={editCommentText}
                             onChangeText={setEditCommentText}
                           />
-                          <Button title="Sauvegarder" onPress={() => handleEditComment(comment._id, item._id)} />
+                          <Button
+                            title="Enregistrer"
+                            onPress={() => handleEditComment(comment._id, item._id)}
+                          />
                         </View>
-                      ) : (
-                        <Text style={styles.commentText}>{comment.text}</Text>
                       )}
                     </View>
                   ))
                 ) : (
                   <Text style={styles.noCommentsText}>Aucun commentaire</Text>
                 )}
-                <View style={styles.addCommentSection}>
-                  <TextInput
-                    style={styles.commentInput}
-                    placeholder="Ajouter un commentaire..."
-                    value={commentText}
-                    onChangeText={setCommentText}
-                  />
-                  <Button title="Ajouter" onPress={() => handleAddComment(item._id)} />
-                </View>
+                <TextInput
+                  style={styles.commentInput}
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  placeholder="Écrire un commentaire..."
+                />
+                <Button
+                  title="Ajouter Commentaire"
+                  onPress={() => handleAddComment(item._id)}
+                />
               </View>
             )}
           </View>
@@ -224,45 +250,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#f5f5f5',
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   error: {
     color: 'red',
     textAlign: 'center',
+    marginTop: 20,
   },
   publicationCard: {
-    backgroundColor: '#fff',
-    marginBottom: 10,
+    marginBottom: 20,
     padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
   },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
   },
   userInfo: {
-    flex: 1,
+    marginLeft: 10,
   },
   userName: {
     fontWeight: 'bold',
   },
   publicationDate: {
+    fontSize: 12,
     color: '#888',
   },
   publicationImage: {
@@ -273,7 +294,6 @@ const styles = StyleSheet.create({
   noImageText: {
     color: '#888',
     textAlign: 'center',
-    marginVertical: 10,
   },
   description: {
     marginBottom: 10,
@@ -299,61 +319,49 @@ const styles = StyleSheet.create({
   commentText: {
     color: '#fff',
   },
+  deletePublicationButton: {
+    backgroundColor: '#dc3545',
+    padding: 10,
+    borderRadius: 5,
+  },
+  deletePublicationButtonText: {
+    color: '#fff',
+  },
   commentsSection: {
     marginTop: 10,
   },
   commentCard: {
-    backgroundColor: '#e9ecef',
-    padding: 10,
-    borderRadius: 5,
     marginBottom: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
   },
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  commentUserImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 10,
-  },
-  commentUserName: {
-    fontWeight: 'bold',
-  },
-  editDeleteButtons: {
-    flexDirection: 'row',
-    marginLeft: 'auto',
-  },
-  deleteButton: {
-    backgroundColor: '#dc3545',
-    padding: 5,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  deleteButtonText: {
-    color: '#fff',
+    marginBottom: 5,
   },
   editButton: {
-    backgroundColor: '#007bff',
+    marginLeft: 'auto',
     padding: 5,
-    borderRadius: 5,
   },
   editButtonText: {
-    color: '#fff',
+    color: '#007bff',
   },
-  editCommentSection: {
-    marginTop: 10,
+  noCommentsText: {
+    color: '#888',
+    textAlign: 'center',
   },
   commentInput: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
     borderRadius: 5,
+    padding: 10,
     marginBottom: 10,
   },
-  noCommentsText: {
-    color: '#888',
+  editCommentSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
