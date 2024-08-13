@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, TextInput, Button } from 'react-native';
 import { getPublicationsByNomVille } from '../services/PublicationService';
-import { getCommentsByPublication, addComment, deleteComment } from '../services/CommentService';
+import { getCommentsByPublication, addComment, deleteComment, updateComment } from '../services/CommentService';
 import { UserContext } from './UserC';
 
 export default function PublicationList({ route, navigation }) {
@@ -12,6 +12,8 @@ export default function PublicationList({ route, navigation }) {
   const [expandedPublicationId, setExpandedPublicationId] = useState(null);
   const [comments, setComments] = useState({});
   const [commentText, setCommentText] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState('');
 
   const { user } = useContext(UserContext); // Utilisez le contexte pour obtenir les informations de l'utilisateur connecté
 
@@ -82,6 +84,23 @@ export default function PublicationList({ route, navigation }) {
     }
   };
 
+  const handleEditComment = async (commentId, publicationId) => {
+    if (!editCommentText.trim()) {
+      alert('Veuillez entrer du texte pour le commentaire');
+      return;
+    }
+
+    try {
+      await updateComment(commentId, editCommentText);
+      setEditingCommentId(null); // Exit edit mode
+      setEditCommentText(''); // Clear the input field
+      // Refetch comments for the updated publication
+      await handleExpandComments(publicationId);
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du commentaire :', err.message);
+    }
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
   }
@@ -145,16 +164,39 @@ export default function PublicationList({ route, navigation }) {
                           <Image source={{ uri: 'https://via.placeholder.com/30' }} style={styles.commentUserImage} />
                         )}
                         <Text style={styles.commentUserName}>{comment.userId.fullName}</Text>
-                        {user && user.id === comment.userId._id && ( // Show delete button only if the user is the author of the comment
-                          <TouchableOpacity 
-                            style={styles.deleteButton} 
-                            onPress={() => handleDeleteComment(comment._id, item._id)}
-                          >
-                            <Text style={styles.deleteButtonText}>Supprimer</Text>
-                          </TouchableOpacity>
+                        {user && user.id === comment.userId._id && ( // Show delete and edit buttons only if the user is the author of the comment
+                          <View style={styles.editDeleteButtons}>
+                            <TouchableOpacity 
+                              style={styles.deleteButton} 
+                              onPress={() => handleDeleteComment(comment._id, item._id)}
+                            >
+                              <Text style={styles.deleteButtonText}>Supprimer</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                              style={styles.editButton} 
+                              onPress={() => {
+                                setEditingCommentId(comment._id);
+                                setEditCommentText(comment.text);
+                              }}
+                            >
+                              <Text style={styles.editButtonText}>Modifier</Text>
+                            </TouchableOpacity>
+                          </View>
                         )}
                       </View>
-                      <Text style={styles.commentText}>{comment.text}</Text>
+                      {editingCommentId === comment._id ? (
+                        <View style={styles.editCommentSection}>
+                          <TextInput
+                            style={styles.commentInput}
+                            placeholder="Modifier le commentaire..."
+                            value={editCommentText}
+                            onChangeText={setEditCommentText}
+                          />
+                          <Button title="Sauvegarder" onPress={() => handleEditComment(comment._id, item._id)} />
+                        </View>
+                      ) : (
+                        <Text style={styles.commentText}>{comment.text}</Text>
+                      )}
                     </View>
                   ))
                 ) : (
@@ -167,16 +209,13 @@ export default function PublicationList({ route, navigation }) {
                     value={commentText}
                     onChangeText={setCommentText}
                   />
-                  <Button title="Envoyer" onPress={() => handleAddComment(item._id)} />
+                  <Button title="Ajouter" onPress={() => handleAddComment(item._id)} />
                 </View>
               </View>
             )}
           </View>
         )}
       />
-      <TouchableOpacity style={styles.createPostButton} onPress={() => navigation.navigate('CreatePublication')}>
-        <Text style={styles.createPostButtonText}>Créer une publication</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -185,17 +224,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    backgroundColor: '#f5f5f5',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
   },
   publicationCard: {
-    marginBottom: 15,
-    borderRadius: 5,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 3,
+    marginBottom: 10,
     padding: 10,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -220,13 +268,12 @@ const styles = StyleSheet.create({
   publicationImage: {
     width: '100%',
     height: 200,
-    borderRadius: 5,
-    marginBottom: 10,
+    marginVertical: 10,
   },
   noImageText: {
+    color: '#888',
     textAlign: 'center',
     marginVertical: 10,
-    color: '#888',
   },
   description: {
     marginBottom: 10,
@@ -245,7 +292,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   commentButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#28a745',
     padding: 10,
     borderRadius: 5,
   },
@@ -256,14 +303,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   commentCard: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    paddingVertical: 5,
+    backgroundColor: '#e9ecef',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   commentUserImage: {
     width: 30,
@@ -273,70 +321,39 @@ const styles = StyleSheet.create({
   },
   commentUserName: {
     fontWeight: 'bold',
-    marginRight: 10,
+  },
+  editDeleteButtons: {
+    flexDirection: 'row',
+    marginLeft: 'auto',
   },
   deleteButton: {
-    marginLeft: 'auto',
     backgroundColor: '#dc3545',
     padding: 5,
     borderRadius: 5,
+    marginRight: 10,
   },
   deleteButtonText: {
     color: '#fff',
   },
-  commentText: {
-    marginLeft: 40,
+  editButton: {
+    backgroundColor: '#007bff',
+    padding: 5,
+    borderRadius: 5,
   },
-  noCommentsText: {
-    textAlign: 'center',
-    color: '#888',
+  editButtonText: {
+    color: '#fff',
   },
-  addCommentSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  editCommentSection: {
+    marginTop: 10,
   },
   commentInput: {
-    flex: 1,
-    borderColor: '#ddd',
     borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
     borderRadius: 5,
-    padding: 5,
-    marginRight: 10,
+    marginBottom: 10,
   },
-  createPostButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-  },
-  createPostButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  goBackButton: {
-    backgroundColor: '#6c757d',
-    padding: 15,
-    borderRadius: 5,
-    position: 'absolute',
-    bottom: 10,
-    left: 10,
-  },
-  goBackButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
+  noCommentsText: {
+    color: '#888',
   },
 });
