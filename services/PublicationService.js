@@ -21,8 +21,23 @@ export const deletePublication = async (publicationId) => {
       throw new Error(error.response.data.message || 'Erreur lors de la suppression de la publication');
     }
   };
+  export const addPublication = async (formData) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/publication`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout de la publication :', error.message);
+      throw new Error(error.response?.data?.message || 'Erreur lors de l\'ajout de la publication');
+    }
+  };
 
 export default {
   getPublicationsByNomVille,
   deletePublication,
+  addPublication,
 };
+
