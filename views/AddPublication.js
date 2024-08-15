@@ -1,15 +1,15 @@
-// AddPublication.js
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 
 import { UserContext } from './UserC';
-import { addPublication } from '../services/PublicationService';
+import { addPublication, updatePublication } from '../services/PublicationService';
 
-const AddPublication = ({ navigation }) => {
+const AddPublication = ({ navigation, route }) => {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [nomVille, setNomVille] = useState('');
+  const [publicationId, setPublicationId] = useState(route.params?.publicationId || null);
   const { user } = useContext(UserContext);
 
   const handleImagePick = () => {
@@ -47,8 +47,13 @@ const AddPublication = ({ navigation }) => {
     formData.append('userId', user.id);
 
     try {
-      await addPublication(formData);
-      Alert.alert('Succès', 'Publication ajoutée avec succès.');
+      if (publicationId) {
+        await updatePublication(publicationId, formData);
+        Alert.alert('Succès', 'Publication mise à jour avec succès.');
+      } else {
+        await addPublication(formData);
+        Alert.alert('Succès', 'Publication ajoutée avec succès.');
+      }
       navigation.goBack();
     } catch (error) {
       Alert.alert('Erreur', `Erreur lors de l'ajout de la publication: ${error.message}`);
@@ -74,7 +79,7 @@ const AddPublication = ({ navigation }) => {
       />
       <Button title="Choisir une image" onPress={handleImagePick} />
       {image && <Image source={{ uri: image.uri }} style={styles.image} />}
-      <Button title="Ajouter Publication" onPress={handleSubmit} />
+      <Button title={publicationId ? "Mettre à jour la publication" : "Ajouter Publication"} onPress={handleSubmit} />
     </ScrollView>
   );
 };

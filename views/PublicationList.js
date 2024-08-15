@@ -171,13 +171,23 @@ export default function PublicationList({ route, navigation }) {
               >
                 <Text style={styles.commentText}>Commenter</Text>
               </TouchableOpacity>
+
+              {/* Update Publication Button */}
               {user && user.id === item.userId._id && (
-                <TouchableOpacity
-                  style={styles.deletePublicationButton}
-                  onPress={() => handleDeletePublication(item._id)}
-                >
-                  <Text style={styles.deletePublicationButtonText}>Supprimer</Text>
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity
+                    style={styles.updatePublicationButton}
+                    onPress={() => navigation.navigate('AddPublication', { publicationId: item._id })}
+                  >
+                    <Text style={styles.updatePublicationButtonText}>Modifier</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deletePublicationButton}
+                    onPress={() => handleDeletePublication(item._id)}
+                  >
+                    <Text style={styles.deletePublicationButtonText}>Supprimer</Text>
+                  </TouchableOpacity>
+                </>
               )}
             </View>
 
@@ -252,20 +262,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   loader: {
-    flex: 1,
-    justifyContent: 'center',
+    marginTop: 20,
   },
   error: {
     color: 'red',
     textAlign: 'center',
-    marginTop: 20,
   },
   publicationCard: {
-    marginBottom: 20,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 10,
     padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    marginVertical: 10,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -275,67 +282,88 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginRight: 10,
   },
   userInfo: {
-    marginLeft: 10,
+    flexDirection: 'column',
   },
   userName: {
+    fontSize: 16,
     fontWeight: 'bold',
   },
   publicationDate: {
     fontSize: 12,
-    color: '#888',
+    color: 'gray',
   },
   publicationImage: {
     width: '100%',
     height: 200,
+    borderRadius: 10,
     marginVertical: 10,
   },
   noImageText: {
-    color: '#888',
+    fontStyle: 'italic',
     textAlign: 'center',
+    marginVertical: 10,
   },
   description: {
-    marginBottom: 10,
+    fontSize: 14,
+    marginVertical: 10,
   },
   interactionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginTop: 10,
   },
   likeButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
+    backgroundColor: '#ff8c00',
+    padding: 5,
     borderRadius: 5,
   },
   likeText: {
-    color: '#fff',
+    color: 'white',
+    fontWeight: 'bold',
   },
   commentButton: {
-    backgroundColor: '#28a745',
-    padding: 10,
+    backgroundColor: '#1e90ff',
+    padding: 5,
     borderRadius: 5,
   },
   commentText: {
-    color: '#fff',
+    color: 'white',
+    fontWeight: 'bold',
   },
-  deletePublicationButton: {
-    backgroundColor: '#dc3545',
-    padding: 10,
+  updatePublicationButton: {
+    backgroundColor: '#008CBA',
+    padding: 5,
     borderRadius: 5,
   },
+  updatePublicationButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  deletePublicationButton: {
+    backgroundColor: '#dc143c',
+    padding: 5,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
   deletePublicationButtonText: {
-    color: '#fff',
+    color: 'white',
+    fontWeight: 'bold',
   },
   commentsSection: {
     marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
   commentCard: {
-    marginBottom: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: '#f0f0f0',
     borderRadius: 5,
+    padding: 10,
+    marginTop: 5,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -343,25 +371,31 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   editButton: {
-    marginLeft: 'auto',
-    padding: 5,
+    marginLeft: 10,
+    backgroundColor: '#008CBA',
+    padding: 3,
+    borderRadius: 5,
   },
   editButtonText: {
-    color: '#007bff',
-  },
-  noCommentsText: {
-    color: '#888',
-    textAlign: 'center',
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+    color: 'white',
+    fontWeight: 'bold',
   },
   editCommentSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 10,
+  },
+  commentInput: {
+    flex: 1,
+    borderColor: '#e0e0e0',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+    marginRight: 10,
+  },
+  noCommentsText: {
+    fontStyle: 'italic',
+    textAlign: 'center',
+    color: 'gray',
   },
 });

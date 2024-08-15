@@ -34,10 +34,24 @@ export const deletePublication = async (publicationId) => {
       throw new Error(error.response?.data?.message || 'Erreur lors de l\'ajout de la publication');
     }
   };
+  export const updatePublication = async (publicationId, formData) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/publication/${publicationId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la publication :', error.message);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de la publication');
+    }
+  };
 
 export default {
   getPublicationsByNomVille,
   deletePublication,
   addPublication,
+  updatePublication,
 };
 
