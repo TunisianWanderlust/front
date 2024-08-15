@@ -74,12 +74,28 @@ export default function PublicationList({ route, navigation }) {
   };
 
   const handleDeleteComment = async (commentId, publicationId) => {
-    try {
-      await deleteComment(commentId);
-      await handleExpandComments(publicationId);
-    } catch (err) {
-      console.error('Erreur lors de la suppression du commentaire :', err.message);
-    }
+    Alert.alert(
+      'Confirmer la suppression',
+      'Êtes-vous sûr de vouloir supprimer ce commentaire ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          onPress: async () => {
+            try {
+              await deleteComment(commentId);
+              await handleExpandComments(publicationId);
+            } catch (err) {
+              console.error('Erreur lors de la suppression du commentaire :', err.message);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   const handleEditComment = async (commentId, publicationId) => {
@@ -206,15 +222,23 @@ export default function PublicationList({ route, navigation }) {
                         <View style={styles.userInfo}>
                           <Text style={styles.userName}>{comment.userId.fullName}</Text>
                           {user && user.id === comment.userId._id && (
-                            <TouchableOpacity
-                              style={styles.editButton}
-                              onPress={() => {
-                                setEditingCommentId(comment._id);
-                                setEditCommentText(comment.text);
-                              }}
-                            >
-                              <Text style={styles.editButtonText}>Modifier</Text>
-                            </TouchableOpacity>
+                            <>
+                              <TouchableOpacity
+                                style={styles.editButton}
+                                onPress={() => {
+                                  setEditingCommentId(comment._id);
+                                  setEditCommentText(comment.text);
+                                }}
+                              >
+                                <Text style={styles.editButtonText}>Modifier</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={styles.deleteCommentButton}
+                                onPress={() => handleDeleteComment(comment._id, item._id)}
+                              >
+                                <Text style={styles.deleteCommentButtonText}>Supprimer</Text>
+                              </TouchableOpacity>
+                            </>
                           )}
                         </View>
                       </View>
@@ -226,10 +250,7 @@ export default function PublicationList({ route, navigation }) {
                             value={editCommentText}
                             onChangeText={setEditCommentText}
                           />
-                          <Button
-                            title="Enregistrer"
-                            onPress={() => handleEditComment(comment._id, item._id)}
-                          />
+                          <Button title="Enregistrer" onPress={() => handleEditComment(comment._id, item._id)} />
                         </View>
                       )}
                     </View>
@@ -239,14 +260,11 @@ export default function PublicationList({ route, navigation }) {
                 )}
                 <TextInput
                   style={styles.commentInput}
+                  placeholder="Ajouter un commentaire"
                   value={commentText}
                   onChangeText={setCommentText}
-                  placeholder="Écrire un commentaire..."
                 />
-                <Button
-                  title="Ajouter Commentaire"
-                  onPress={() => handleAddComment(item._id)}
-                />
+                <Button title="Ajouter" onPress={() => handleAddComment(item._id)} />
               </View>
             )}
           </View>
@@ -261,109 +279,90 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  loader: {
-    marginTop: 20,
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-  },
   publicationCard: {
-    backgroundColor: '#f8f8f8',
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
     padding: 10,
-    marginVertical: 10,
+    marginBottom: 10,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 5,
   },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
   },
   userInfo: {
-    flexDirection: 'column',
+    marginLeft: 10,
   },
   userName: {
-    fontSize: 16,
     fontWeight: 'bold',
   },
   publicationDate: {
-    fontSize: 12,
-    color: 'gray',
+    color: '#888',
   },
   publicationImage: {
     width: '100%',
     height: 200,
-    borderRadius: 10,
     marginVertical: 10,
   },
   noImageText: {
-    fontStyle: 'italic',
     textAlign: 'center',
-    marginVertical: 10,
+    color: '#888',
   },
   description: {
-    fontSize: 14,
-    marginVertical: 10,
+    marginBottom: 10,
   },
   interactionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 10,
   },
   likeButton: {
-    backgroundColor: '#ff8c00',
-    padding: 5,
+    backgroundColor: '#007bff',
+    padding: 10,
     borderRadius: 5,
   },
   likeText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
   },
   commentButton: {
-    backgroundColor: '#1e90ff',
-    padding: 5,
+    backgroundColor: '#28a745',
+    padding: 10,
     borderRadius: 5,
   },
   commentText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
   },
   updatePublicationButton: {
-    backgroundColor: '#008CBA',
-    padding: 5,
+    backgroundColor: '#ffc107',
+    padding: 10,
     borderRadius: 5,
   },
   updatePublicationButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
   },
   deletePublicationButton: {
-    backgroundColor: '#dc143c',
-    padding: 5,
+    backgroundColor: '#dc3545',
+    padding: 10,
     borderRadius: 5,
-    marginLeft: 10,
   },
   deletePublicationButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
   },
   commentsSection: {
     marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   commentCard: {
-    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ddd',
     borderRadius: 5,
     padding: 10,
-    marginTop: 5,
+    marginBottom: 5,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -371,31 +370,43 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   editButton: {
-    marginLeft: 10,
-    backgroundColor: '#008CBA',
-    padding: 3,
+    backgroundColor: '#007bff',
+    padding: 5,
     borderRadius: 5,
+    marginRight: 5,
   },
   editButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
+  },
+  deleteCommentButton: {
+    backgroundColor: '#dc3545',
+    padding: 5,
+    borderRadius: 5,
+  },
+  deleteCommentButtonText: {
+    color: '#fff',
   },
   editCommentSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
+    marginTop: 5,
   },
   commentInput: {
-    flex: 1,
-    borderColor: '#e0e0e0',
     borderWidth: 1,
+    borderColor: '#ddd',
     borderRadius: 5,
     padding: 5,
-    marginRight: 10,
+    marginBottom: 5,
   },
   noCommentsText: {
-    fontStyle: 'italic',
     textAlign: 'center',
-    color: 'gray',
+    color: '#888',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
   },
 });

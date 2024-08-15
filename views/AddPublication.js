@@ -49,12 +49,20 @@ const AddPublication = ({ navigation, route }) => {
     try {
       if (publicationId) {
         await updatePublication(publicationId, formData);
-        Alert.alert('Succès', 'Publication mise à jour avec succès.');
       } else {
         await addPublication(formData);
-        Alert.alert('Succès', 'Publication ajoutée avec succès.');
       }
-      navigation.goBack();
+
+      Alert.alert(
+        'Succès',
+        publicationId ? 'Publication mise à jour avec succès.' : 'Publication ajoutée avec succès.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('PublicationList'),
+          },
+        ]
+      );
     } catch (error) {
       Alert.alert('Erreur', `Erreur lors de l'ajout de la publication: ${error.message}`);
       console.error('Erreur lors de l\'ajout de la publication:', error.message);
