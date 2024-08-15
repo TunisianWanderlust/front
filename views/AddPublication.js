@@ -1,16 +1,33 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 import { UserContext } from './UserC';
 import { addPublication, updatePublication } from '../services/PublicationService';
+import { getVilles } from '../services/VilleService';
 
 const AddPublication = ({ navigation, route }) => {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [nomVille, setNomVille] = useState('');
   const [publicationId, setPublicationId] = useState(route.params?.publicationId || null);
+  const [villes, setVilles] = useState([]);
   const { user } = useContext(UserContext);
+
+  useEffect(() => {
+    const fetchVilles = async () => {
+      try {
+        const villesData = await getVilles();
+        setVilles(villesData);
+      } catch (error) {
+        Alert.alert('Erreur', 'Impossible de récupérer les villes');
+        console.error(error);
+      }
+    };
+
+    fetchVilles();
+  }, []);
 
   const handleImagePick = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -79,12 +96,16 @@ const AddPublication = ({ navigation, route }) => {
         placeholder="Entrez la description"
       />
       <Text style={styles.label}>Nom de la Ville:</Text>
-      <TextInput
-        style={styles.input}
-        value={nomVille}
-        onChangeText={setNomVille}
-        placeholder="Entrez le nom de la ville"
-      />
+      <Picker
+        selectedValue={nomVille}
+        style={styles.picker}
+        onValueChange={(itemValue) => setNomVille(itemValue)}
+      >
+        <Picker.Item label="Sélectionner une ville" value="" />
+        {villes.map((ville) => (
+          <Picker.Item key={ville._id} label={ville.nom} value={ville.nom} />
+        ))}
+      </Picker>
       <Button title="Choisir une image" onPress={handleImagePick} />
       {image && <Image source={{ uri: image.uri }} style={styles.image} />}
       <Button title={publicationId ? "Mettre à jour la publication" : "Ajouter Publication"} onPress={handleSubmit} />
@@ -104,6 +125,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
+    marginBottom: 15,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    borderColor: '#ccc',
+    borderWidth: 1,
     marginBottom: 15,
   },
   image: {
