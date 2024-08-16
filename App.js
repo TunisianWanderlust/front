@@ -35,7 +35,7 @@ const App = () => {
             <Stack.Screen name="UpdateProfile" component={UpdateProfileScreen} />
             <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
             <Stack.Screen name="PublicationList" component={PublicationListWithTabs} />
-            <Stack.Screen name="AddPublication" component={AddPublication} />
+
           </Stack.Navigator>
         </NavigationContainer>
       </UserProvider>

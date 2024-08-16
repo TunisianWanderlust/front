@@ -48,10 +48,21 @@ export const deletePublication = async (publicationId) => {
     }
   };
 
+  export const getPublicationsByUserId = async (userId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/publication/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des publications :', error.message);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des publications');
+    }
+  };
+  
 export default {
   getPublicationsByNomVille,
   deletePublication,
   addPublication,
   updatePublication,
+  getPublicationsByUserId,
 };
 

@@ -1,15 +1,18 @@
-// PublicationListWithTabs.js
-
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous que ce chemin est correct
 import PublicationList from './PublicationList'; // Assurez-vous que le chemin est correct
 import AddPublication from './AddPublication'; // Assurez-vous que le chemin est correct
+import UserProfileScreen from './UserProfileScreen'; // Assurez-vous que le chemin est correct
+import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 
 const Tab = createBottomTabNavigator();
 
 const PublicationListWithTabs = ({ route, navigation }) => {
+  const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
+  const userId = user ? user.id : null; // Obtenir l'ID utilisateur
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -32,6 +35,16 @@ const PublicationListWithTabs = ({ route, navigation }) => {
             >
               <Icon name="add-circle" size={40} color="black" />
             </TouchableOpacity>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={UserProfileScreen}
+        initialParams={{ userId }} // Passer l'ID utilisateur en paramètre
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="person" color={color} size={size} />
           ),
         }}
       />
