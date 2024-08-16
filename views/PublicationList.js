@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOp
 import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
 import { getCommentsByPublication, addComment, deleteComment, updateComment } from '../services/CommentService';
 import { UserContext } from './UserC';
+import { Menu, Divider, IconButton } from 'react-native-paper';
 
 export default function PublicationList({ route, navigation }) {
   const { nomVille } = route.params;
@@ -14,6 +15,7 @@ export default function PublicationList({ route, navigation }) {
   const [commentText, setCommentText] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
+  const [visibleMenu, setVisibleMenu] = useState(null);
 
   const { user } = useContext(UserContext);
 
@@ -190,20 +192,15 @@ export default function PublicationList({ route, navigation }) {
 
               {/* Update Publication Button */}
               {user && user.id === item.userId._id && (
-                <>
-                  <TouchableOpacity
-                    style={styles.updatePublicationButton}
-                    onPress={() => navigation.navigate('AddPublication', { publicationId: item._id })}
-                  >
-                    <Text style={styles.updatePublicationButtonText}>Modifier</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.deletePublicationButton}
-                    onPress={() => handleDeletePublication(item._id)}
-                  >
-                    <Text style={styles.deletePublicationButtonText}>Supprimer</Text>
-                  </TouchableOpacity>
-                </>
+                <Menu
+                  visible={visibleMenu === item._id}
+                  onDismiss={() => setVisibleMenu(null)}
+                  anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(item._id)} />}
+                >
+                  <Menu.Item onPress={() => { setVisibleMenu(null); navigation.navigate('AddPublication', { publicationId: item._id }); }} title="Modifier" />
+                  <Divider />
+                  <Menu.Item onPress={() => { setVisibleMenu(null); handleDeletePublication(item._id); }} title="Supprimer" />
+                </Menu>
               )}
             </View>
 
@@ -230,41 +227,48 @@ export default function PublicationList({ route, navigation }) {
                                   setEditCommentText(comment.text);
                                 }}
                               >
-                                <Text style={styles.editButtonText}>Modifier</Text>
+                                <Text style={styles.editText}>Modifier</Text>
                               </TouchableOpacity>
                               <TouchableOpacity
-                                style={styles.deleteCommentButton}
+                                style={styles.deleteButton}
                                 onPress={() => handleDeleteComment(comment._id, item._id)}
                               >
-                                <Text style={styles.deleteCommentButtonText}>Supprimer</Text>
+                                <Text style={styles.deleteText}>Supprimer</Text>
                               </TouchableOpacity>
                             </>
                           )}
                         </View>
                       </View>
-                      <Text>{comment.text}</Text>
+                      <Text style={styles.commentText}>{comment.text}</Text>
                       {editingCommentId === comment._id && (
                         <View style={styles.editCommentSection}>
                           <TextInput
-                            style={styles.commentInput}
                             value={editCommentText}
                             onChangeText={setEditCommentText}
+                            style={styles.editCommentInput}
+                            placeholder="Modifier le commentaire"
                           />
-                          <Button title="Enregistrer" onPress={() => handleEditComment(comment._id, item._id)} />
+                          <Button
+                            title="Enregistrer"
+                            onPress={() => handleEditComment(comment._id, item._id)}
+                          />
                         </View>
                       )}
                     </View>
                   ))
                 ) : (
-                  <Text style={styles.noCommentsText}>Aucun commentaire</Text>
+                  <Text>Aucun commentaire</Text>
                 )}
                 <TextInput
-                  style={styles.commentInput}
-                  placeholder="Ajouter un commentaire"
                   value={commentText}
                   onChangeText={setCommentText}
+                  style={styles.commentInput}
+                  placeholder="Ajouter un commentaire"
                 />
-                <Button title="Ajouter" onPress={() => handleAddComment(item._id)} />
+                <Button
+                  title="Ajouter"
+                  onPress={() => handleAddComment(item._id)}
+                />
               </View>
             )}
           </View>
@@ -280,24 +284,25 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   publicationCard: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    marginBottom: 15,
     padding: 10,
-    marginBottom: 10,
+    borderRadius: 5,
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginRight: 10,
   },
   userInfo: {
-    marginLeft: 10,
+    flex: 1,
   },
   userName: {
     fontWeight: 'bold',
@@ -308,105 +313,89 @@ const styles = StyleSheet.create({
   publicationImage: {
     width: '100%',
     height: 200,
-    marginVertical: 10,
+    marginBottom: 10,
   },
   noImageText: {
-    textAlign: 'center',
     color: '#888',
+    textAlign: 'center',
   },
   description: {
     marginBottom: 10,
   },
   interactionRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
   },
   likeButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#ddd',
     padding: 10,
     borderRadius: 5,
   },
   likeText: {
-    color: '#fff',
+    color: '#333',
   },
   commentButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#ddd',
     padding: 10,
     borderRadius: 5,
   },
   commentText: {
-    color: '#fff',
-  },
-  updatePublicationButton: {
-    backgroundColor: '#ffc107',
-    padding: 10,
-    borderRadius: 5,
-  },
-  updatePublicationButtonText: {
-    color: '#fff',
-  },
-  deletePublicationButton: {
-    backgroundColor: '#dc3545',
-    padding: 10,
-    borderRadius: 5,
-  },
-  deletePublicationButtonText: {
-    color: '#fff',
+    color: '#333',
   },
   commentsSection: {
     marginTop: 10,
   },
   commentCard: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    marginBottom: 10,
     padding: 10,
-    marginBottom: 5,
+    borderRadius: 5,
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
   },
+  editCommentSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editCommentInput: {
+    flex: 1,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+    marginRight: 10,
+  },
   editButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#4CAF50',
     padding: 5,
     borderRadius: 5,
     marginRight: 5,
   },
-  editButtonText: {
+  editText: {
     color: '#fff',
   },
-  deleteCommentButton: {
-    backgroundColor: '#dc3545',
+  deleteButton: {
+    backgroundColor: '#f44336',
     padding: 5,
     borderRadius: 5,
   },
-  deleteCommentButtonText: {
+  deleteText: {
     color: '#fff',
   },
-  editCommentSection: {
-    marginTop: 5,
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 5,
-    marginBottom: 5,
-  },
-  noCommentsText: {
+  error: {
+    color: 'red',
     textAlign: 'center',
-    color: '#888',
+    marginTop: 20,
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
   },
 });
