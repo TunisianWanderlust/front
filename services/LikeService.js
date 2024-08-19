@@ -24,8 +24,19 @@ export const getLikeCount = async (publicationId) => {
         throw new Error(error.response ? error.response.data.message : 'Erreur lors de la récupération du nombre de likes');
     }
 };
+export const removeLike = async (publicationId, userId) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/Like/remove`, { publicationId, userId });
+        return response.data;
+    } catch (error) {
+        console.error('Erreur lors de la suppression du like :', error.message);
+        throw new Error(error.response ? error.response.data.message : 'Erreur lors de la suppression du like');
+    }
+};
+
 
 export default {
     addLike,
     getLikeCount,
+    removeLike,
 };

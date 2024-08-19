@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
-import { addLike, getLikeCount } from '../services/LikeService';  // Importez la fonction getLikeCount
+import { addLike, removeLike, getLikeCount } from '../services/LikeService'; // Import removeLike
 import { UserContext } from './UserC';
 import { Menu, Divider, IconButton } from 'react-native-paper';
 import CommentSection from './Comment';
@@ -14,6 +14,7 @@ export default function PublicationList({ route, navigation }) {
   const [expandedPublicationId, setExpandedPublicationId] = useState(null);
   const [visibleMenu, setVisibleMenu] = useState(null);
   const [likeCounts, setLikeCounts] = useState({});
+  const [userLikes, setUserLikes] = useState({}); // Track user likes
 
   const { user } = useContext(UserContext);
 
@@ -23,13 +24,18 @@ export default function PublicationList({ route, navigation }) {
         const data = await getPublicationsByNomVille(nomVille);
         setPublications(data);
 
-        // Obtenez les nombres de likes pour chaque publication
         const likeCountsData = {};
+        const userLikesData = {};
         for (const publication of data) {
           const likeCount = await getLikeCount(publication._id);
-          likeCountsData[publication._id] = likeCount.likeCount; // Suppose que votre réponse contient un champ likeCount
+          likeCountsData[publication._id] = likeCount.likeCount;
+          if (user) {
+            const hasLiked = await checkUserLike(publication._id, user.id); // Function to check if the user has liked
+            userLikesData[publication._id] = hasLiked;
+          }
         }
         setLikeCounts(likeCountsData);
+        setUserLikes(userLikesData);
       } catch (err) {
         setError('Erreur lors de la récupération des publications : ' + err.message);
       } finally {
@@ -38,7 +44,7 @@ export default function PublicationList({ route, navigation }) {
     };
 
     fetchPublications();
-  }, [nomVille]);
+  }, [nomVille, user]);
 
   const handleDeletePublication = async (publicationId) => {
     Alert.alert(
@@ -60,6 +66,11 @@ export default function PublicationList({ route, navigation }) {
                 delete newCounts[publicationId];
                 return newCounts;
               });
+              setUserLikes(prev => {
+                const newLikes = { ...prev };
+                delete newLikes[publicationId];
+                return newLikes;
+              });
             } catch (err) {
               console.error('Erreur lors de la suppression de la publication :', err.message);
             }
@@ -74,28 +85,49 @@ export default function PublicationList({ route, navigation }) {
     setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
   };
 
-  const handleLike = async (publicationId) => {
+  const handleLikeDislike = async (publicationId) => {
     if (!user) {
-      Alert.alert('Vous devez être connecté pour aimer une publication.');
+      Alert.alert('Vous devez être connecté pour liker ou ne pas liker une publication.');
       return;
     }
 
     try {
-      const result = await addLike(publicationId, user.id);
-      if (result.message === 'Vous avez déjà aimé cette publication') {
-        Alert.alert('Déjà aimé', result.message);
-      } else {
-        Alert.alert('Succès', 'Vous avez aimé cette publication.');
-        // Mettre à jour le compteur de likes
+      if (userLikes[publicationId]) {
+        // User has already liked, so remove the like
+        await removeLike(publicationId, user.id);
+        Alert.alert('Succès', 'Vous avez retiré votre like.');
         setLikeCounts(prev => ({
           ...prev,
-          [publicationId]: (prev[publicationId] || 0) + 1
+          [publicationId]: (prev[publicationId] || 0) - 1
         }));
+      } else {
+        // User has not liked yet, so add the like
+        const result = await addLike(publicationId, user.id);
+        if (result.message === 'Vous avez déjà aimé cette publication') {
+          Alert.alert('Déjà aimé', result.message);
+        } else {
+          Alert.alert('Succès', 'Vous avez aimé cette publication.');
+          setLikeCounts(prev => ({
+            ...prev,
+            [publicationId]: (prev[publicationId] || 0) + 1
+          }));
+        }
       }
+
+      // Update userLikes state
+      setUserLikes(prev => ({
+        ...prev,
+        [publicationId]: !prev[publicationId]
+      }));
     } catch (error) {
-      console.error('Erreur lors de l\'ajout du like :', error.message);
-      Alert.alert('Erreur', 'Impossible d\'ajouter le like.');
+      console.error('Erreur lors de la gestion du like/dislike :', error.message);
+      Alert.alert('Erreur', 'Impossible de mettre à jour le like.');
     }
+  };
+
+  const checkUserLike = async (publicationId, userId) => {
+    // Function to check if the user has liked a publication
+    // Implement this function in your LikeService
   };
 
   if (loading) {
@@ -138,9 +170,11 @@ export default function PublicationList({ route, navigation }) {
             <View style={styles.interactionRow}>
               <TouchableOpacity 
                 style={styles.likeButton}
-                onPress={() => handleLike(item._id)} // Ajoutez la fonction handleLike ici
+                onPress={() => handleLikeDislike(item._id)}
               >
-                <Text style={styles.likeText}>J'aime ({likeCounts[item._id] || 0})</Text>
+                <Text style={styles.likeText}>
+                  {userLikes[item._id] ? 'Je n\'aime plus' : 'J\'aime'} ({likeCounts[item._id] || 0})
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.commentButton}
@@ -206,25 +240,28 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
   },
   userInfo: {
     flex: 1,
+    marginLeft: 10,
   },
   userName: {
     fontWeight: 'bold',
   },
   publicationDate: {
-    color: 'grey',
+    color: 'gray',
+    fontSize: 12,
   },
   publicationImage: {
     width: '100%',
     height: 200,
-    marginVertical: 10,
     borderRadius: 10,
+    marginVertical: 10,
   },
   noImageText: {
-    color: 'grey',
+    color: 'gray',
+    textAlign: 'center',
+    marginVertical: 10,
   },
   description: {
     marginBottom: 10,
@@ -232,23 +269,26 @@ const styles = StyleSheet.create({
   interactionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
   },
   likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+    padding: 10,
+    borderRadius: 5,
   },
   likeText: {
-    marginLeft: 5,
+    color: '#333',
   },
   commentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+    padding: 10,
+    borderRadius: 5,
   },
   commentText: {
-    marginLeft: 5,
+    color: '#333',
   },
 });
+
 
 
 /*import React, { useState, useEffect, useContext } from 'react';
