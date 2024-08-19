@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Button } from 'react-native';
-
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Button, Alert } from 'react-native';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
-import { getPublicationsByUserId } from '../services/PublicationService';
+import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
 
 const UserProfileScreen = () => {
   const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
@@ -16,6 +15,7 @@ const UserProfileScreen = () => {
     setError(null);
     try {
       const publicationsResponse = await getPublicationsByUserId(userId); // Récupérer les publications de l'utilisateur
+      console.log('Publications Response:', publicationsResponse); // Vérifiez les données des publications
       setPublications(publicationsResponse);
     } catch (err) {
       setError(err.message);
@@ -29,6 +29,31 @@ const UserProfileScreen = () => {
       fetchData();
     }
   }, [userId]);
+
+  const handleDeletePublication = async (publicationId) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      'Êtes-vous sûr de vouloir supprimer cette publication ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          onPress: async () => {
+            try {
+              await deletePublication(publicationId);
+              setPublications(prev => prev.filter(pub => pub.id !== publicationId));
+            } catch (err) {
+              console.error('Erreur lors de la suppression de la publication :', err.message);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -49,9 +74,17 @@ const UserProfileScreen = () => {
         <Text style={styles.publicationsTitle}>Publications</Text>
         <FlatList
           data={publications}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()} // Utilisez l'ID de la publication
           renderItem={({ item }) => (
-            <PublicationCard image={item.image} description={item.description} />
+            <PublicationCard
+              userImage={user.image}
+              userName={user.fullName}
+              publicationId={item.id}
+              publicationImage={item.image}
+              publicationDescription={item.description}
+              publicationDate={item.datePub}
+              onDelete={handleDeletePublication} // Passez la fonction de suppression
+            />
           )}
         />
       </View>
@@ -59,12 +92,33 @@ const UserProfileScreen = () => {
   );
 };
 
-const PublicationCard = memo(({ image, description }) => (
-  <View style={styles.publicationCard}>
-    <Image source={{ uri: image }} style={styles.publicationImage} accessibilityLabel="Publication Image" />
-    <Text style={styles.publicationDescription}>{description}</Text>
-  </View>
-));
+const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete }) => {
+  // Afficher l'ID de la publication dans la console
+  console.log('Publication ID:', publicationId);
+
+  return (
+    <View style={styles.publicationCard}>
+      <View style={styles.cardHeader}>
+        <Image 
+          source={{ uri: userImage.replace('127.0.0.1', '192.168.1.21') }} 
+          style={styles.userImage}
+          onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.publicationDate}>{new Date(publicationDate).toLocaleDateString()}</Text>
+        </View>
+      </View>
+      <Image 
+        source={{ uri: publicationImage.replace('127.0.0.1', '192.168.1.21') }} 
+        style={styles.publicationImage}
+        onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+      />
+      <Text style={styles.publicationDescription}>{publicationDescription}</Text>
+      <Button title="Supprimer" onPress={() => onDelete(publicationId)} />
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -94,6 +148,28 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  publicationDate: {
+    fontSize: 14,
+    color: '#666',
   },
   publicationImage: {
     width: '100%',
