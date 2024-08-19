@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
-import { addLike } from '../services/LikeService';  // Importez la fonction addLike
+import { addLike, getLikeCount } from '../services/LikeService';  // Importez la fonction getLikeCount
 import { UserContext } from './UserC';
 import { Menu, Divider, IconButton } from 'react-native-paper';
 import CommentSection from './Comment';
@@ -13,6 +13,7 @@ export default function PublicationList({ route, navigation }) {
   const [error, setError] = useState(null);
   const [expandedPublicationId, setExpandedPublicationId] = useState(null);
   const [visibleMenu, setVisibleMenu] = useState(null);
+  const [likeCounts, setLikeCounts] = useState({});
 
   const { user } = useContext(UserContext);
 
@@ -21,6 +22,14 @@ export default function PublicationList({ route, navigation }) {
       try {
         const data = await getPublicationsByNomVille(nomVille);
         setPublications(data);
+
+        // Obtenez les nombres de likes pour chaque publication
+        const likeCountsData = {};
+        for (const publication of data) {
+          const likeCount = await getLikeCount(publication._id);
+          likeCountsData[publication._id] = likeCount.likeCount; // Suppose que votre réponse contient un champ likeCount
+        }
+        setLikeCounts(likeCountsData);
       } catch (err) {
         setError('Erreur lors de la récupération des publications : ' + err.message);
       } finally {
@@ -46,6 +55,11 @@ export default function PublicationList({ route, navigation }) {
             try {
               await deletePublication(publicationId);
               setPublications(prev => prev.filter(pub => pub._id !== publicationId));
+              setLikeCounts(prev => {
+                const newCounts = { ...prev };
+                delete newCounts[publicationId];
+                return newCounts;
+              });
             } catch (err) {
               console.error('Erreur lors de la suppression de la publication :', err.message);
             }
@@ -60,28 +74,29 @@ export default function PublicationList({ route, navigation }) {
     setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
   };
 
-// PublicationList.js
-
-const handleLike = async (publicationId) => {
-  if (!user) {
+  const handleLike = async (publicationId) => {
+    if (!user) {
       Alert.alert('Vous devez être connecté pour aimer une publication.');
       return;
-  }
+    }
 
-  try {
+    try {
       const result = await addLike(publicationId, user.id);
       if (result.message === 'Vous avez déjà aimé cette publication') {
-          Alert.alert('Déjà aimé', result.message);
+        Alert.alert('Déjà aimé', result.message);
       } else {
-          Alert.alert('Succès', 'Vous avez aimé cette publication.');
-          // Mettez à jour l'état si nécessaire
+        Alert.alert('Succès', 'Vous avez aimé cette publication.');
+        // Mettre à jour le compteur de likes
+        setLikeCounts(prev => ({
+          ...prev,
+          [publicationId]: (prev[publicationId] || 0) + 1
+        }));
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Erreur lors de l\'ajout du like :', error.message);
       Alert.alert('Erreur', 'Impossible d\'ajouter le like.');
-  }
-};
-
+    }
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
@@ -125,7 +140,7 @@ const handleLike = async (publicationId) => {
                 style={styles.likeButton}
                 onPress={() => handleLike(item._id)} // Ajoutez la fonction handleLike ici
               >
-                <Text style={styles.likeText}>J'aime</Text>
+                <Text style={styles.likeText}>J'aime ({likeCounts[item._id] || 0})</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.commentButton}
@@ -234,7 +249,6 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 });
-
 
 
 /*import React, { useState, useEffect, useContext } from 'react';

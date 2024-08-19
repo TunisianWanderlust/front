@@ -15,8 +15,17 @@ export const addLike = async (publicationId, userId) => {
         throw new Error(error.response ? error.response.data.message : 'Erreur lors de l\'ajout du like');
     }
 };
+export const getLikeCount = async (publicationId) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/Like/${publicationId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Erreur lors de la récupération du nombre de likes :', error.message);
+        throw new Error(error.response ? error.response.data.message : 'Erreur lors de la récupération du nombre de likes');
+    }
+};
 
 export default {
     addLike,
-    // Ajoutez d'autres méthodes ici si nécessaire
+    getLikeCount,
 };
