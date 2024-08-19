@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
 import { Menu, IconButton, Divider } from 'react-native-paper';
+import CommentSection from './Comment'; // Importer le composant CommentSection
 
 const UserProfileScreen = ({ navigation }) => {
   const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
@@ -10,6 +11,7 @@ const UserProfileScreen = ({ navigation }) => {
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedPublicationId, setExpandedPublicationId] = useState(null); // Gestion des commentaires étendus
 
   const fetchData = async () => {
     setLoading(true);
@@ -56,17 +58,16 @@ const UserProfileScreen = ({ navigation }) => {
     );
   };
 
+  const handleExpandComments = (publicationId) => {
+    setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
+  };
+
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
   }
 
   if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Erreur: {error}</Text>
-        <Button title="Réessayer" onPress={fetchData} />
-      </View>
-    );
+    return <Text style={styles.error}>{error}</Text>;
   }
 
   return (
@@ -86,6 +87,8 @@ const UserProfileScreen = ({ navigation }) => {
               publicationDate={item.datePub}
               onDelete={handleDeletePublication} // Passez la fonction de suppression
               navigation={navigation} // Passez la navigation prop
+              expandedPublicationId={expandedPublicationId}
+              handleExpandComments={() => handleExpandComments(item.id)} // Ajoutez la fonction d'expansion
             />
           )}
         />
@@ -94,7 +97,7 @@ const UserProfileScreen = ({ navigation }) => {
   );
 };
 
-const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation }) => {
+const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments }) => {
   const [visibleMenu, setVisibleMenu] = useState(null);
 
   return (
@@ -137,6 +140,22 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
         onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
       />
       <Text style={styles.publicationDescription}>{publicationDescription}</Text>
+      <View style={styles.interactionRow}>
+        <TouchableOpacity style={styles.likeButton}>
+          <Text style={styles.likeText}>J'aime</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.commentButton}
+          onPress={() => handleExpandComments(publicationId)}
+        >
+          <Text style={styles.commentText}>Commenter</Text>
+        </TouchableOpacity>
+      </View>
+      <CommentSection
+        publicationId={publicationId}
+        expandedPublicationId={expandedPublicationId}
+        handleExpandComments={() => handleExpandComments(publicationId)}
+      />
     </View>
   );
 });
@@ -202,6 +221,34 @@ const styles = StyleSheet.create({
   publicationDescription: {
     padding: 8,
     fontSize: 16,
+  },
+  interactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 8,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeText: {
+    marginLeft: 5,
+  },
+  commentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  commentText: {
+    marginLeft: 5,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
   },
 });
 
