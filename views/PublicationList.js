@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
+import { addLike } from '../services/LikeService';  // Importez la fonction addLike
 import { UserContext } from './UserC';
 import { Menu, Divider, IconButton } from 'react-native-paper';
 import CommentSection from './Comment';
@@ -59,6 +60,29 @@ export default function PublicationList({ route, navigation }) {
     setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
   };
 
+// PublicationList.js
+
+const handleLike = async (publicationId) => {
+  if (!user) {
+      Alert.alert('Vous devez être connecté pour aimer une publication.');
+      return;
+  }
+
+  try {
+      const result = await addLike(publicationId, user.id);
+      if (result.message === 'Vous avez déjà aimé cette publication') {
+          Alert.alert('Déjà aimé', result.message);
+      } else {
+          Alert.alert('Succès', 'Vous avez aimé cette publication.');
+          // Mettez à jour l'état si nécessaire
+      }
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout du like :', error.message);
+      Alert.alert('Erreur', 'Impossible d\'ajouter le like.');
+  }
+};
+
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
   }
@@ -97,7 +121,10 @@ export default function PublicationList({ route, navigation }) {
             <Text style={styles.description}>{item.description}</Text>
 
             <View style={styles.interactionRow}>
-              <TouchableOpacity style={styles.likeButton}>
+              <TouchableOpacity 
+                style={styles.likeButton}
+                onPress={() => handleLike(item._id)} // Ajoutez la fonction handleLike ici
+              >
                 <Text style={styles.likeText}>J'aime</Text>
               </TouchableOpacity>
               <TouchableOpacity
