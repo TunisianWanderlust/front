@@ -113,7 +113,7 @@ export default function PublicationList({ route, navigation }) {
                   onDismiss={() => setVisibleMenu(null)}
                   anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(item._id)} />}
                 >
-                  <Menu.Item onPress={() => { setVisibleMenu(null); navigation.navigate('UpdatePublication', { publicationId: item._id }); }} title="Modifier" />
+                  <Menu.Item onPress={() => { setVisibleMenu(null); navigation.navigate('AddPublication', { publicationId: item._id }); }} title="Modifier" />
                   <Divider />
                   <Menu.Item onPress={() => { setVisibleMenu(null); handleDeletePublication(item._id); }} title="Supprimer" />
                 </Menu>

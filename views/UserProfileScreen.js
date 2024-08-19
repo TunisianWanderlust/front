@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Button, Alert } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
+import { Menu, IconButton, Divider } from 'react-native-paper';
 
-const UserProfileScreen = () => {
+const UserProfileScreen = ({ navigation }) => {
   const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
   const userId = user ? user.id : null; // Obtenir l'ID utilisateur
   const [publications, setPublications] = useState([]);
@@ -84,6 +85,7 @@ const UserProfileScreen = () => {
               publicationDescription={item.description}
               publicationDate={item.datePub}
               onDelete={handleDeletePublication} // Passez la fonction de suppression
+              navigation={navigation} // Passez la navigation prop
             />
           )}
         />
@@ -92,9 +94,8 @@ const UserProfileScreen = () => {
   );
 };
 
-const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete }) => {
-  // Afficher l'ID de la publication dans la console
-  console.log('Publication ID:', publicationId);
+const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation }) => {
+  const [visibleMenu, setVisibleMenu] = useState(null);
 
   return (
     <View style={styles.publicationCard}>
@@ -108,6 +109,27 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
           <Text style={styles.userName}>{userName}</Text>
           <Text style={styles.publicationDate}>{new Date(publicationDate).toLocaleDateString()}</Text>
         </View>
+        <Menu
+          visible={visibleMenu === publicationId}
+          onDismiss={() => setVisibleMenu(null)}
+          anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(publicationId)} />}
+        >
+          <Menu.Item
+            onPress={() => {
+              setVisibleMenu(null);
+              navigation.navigate('AddPublication', { publicationId });
+            }}
+            title="Modifier"
+          />
+          <Divider />
+          <Menu.Item
+            onPress={() => {
+              setVisibleMenu(null);
+              onDelete(publicationId);
+            }}
+            title="Supprimer"
+          />
+        </Menu>
       </View>
       <Image 
         source={{ uri: publicationImage.replace('127.0.0.1', '192.168.1.21') }} 
@@ -115,7 +137,6 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
         onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
       />
       <Text style={styles.publicationDescription}>{publicationDescription}</Text>
-      <Button title="Supprimer" onPress={() => onDelete(publicationId)} />
     </View>
   );
 });
@@ -162,6 +183,9 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   userName: {
     fontSize: 16,
