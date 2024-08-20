@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
-import { addLike, getLikeCount } from '../services/LikeService'; // Assurez-vous que le chemin est correct
+import { addLike, getLikeCount, removeLike } from '../services/LikeService'; // Assurez-vous que le chemin est correct
 import { Menu, IconButton, Divider } from 'react-native-paper';
 import CommentSection from './Comment'; // Importer le composant CommentSection
 
@@ -77,23 +77,27 @@ const UserProfileScreen = ({ navigation }) => {
     setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
   };
 
-  const handleLike = async (publicationId) => {
+  const handleLikeToggle = async (publicationId, isLiked) => {
     if (!userId) {
       Alert.alert('Erreur', 'Vous devez être connecté pour aimer une publication.');
       return;
     }
 
     try {
-      await addLike(publicationId, userId);
-      
+      if (isLiked) {
+        await removeLike(publicationId, userId);
+      } else {
+        await addLike(publicationId, userId);
+      }
+
       // Mise à jour du nombre de likes
       const updatedLikeCount = await getLikeCount(publicationId);
       setLikeCounts(prev => ({
         ...prev,
         [publicationId]: updatedLikeCount.likeCount,
       }));
-      
-      Alert.alert('Succès', 'Vous avez aimé la publication.');
+
+      Alert.alert('Succès', isLiked ? 'Vous avez retiré votre like.' : 'Vous avez aimé la publication.');
     } catch (error) {
       Alert.alert('Erreur', error.message);
     }
@@ -126,7 +130,7 @@ const UserProfileScreen = ({ navigation }) => {
               navigation={navigation} // Passez la navigation prop
               expandedPublicationId={expandedPublicationId}
               handleExpandComments={() => handleExpandComments(item.id)} // Ajoutez la fonction d'expansion
-              onLike={handleLike} // Passez la fonction de like
+              onLikeToggle={(isLiked) => handleLikeToggle(item.id, isLiked)} // Passez la fonction de like toggle
               likeCount={likeCounts[item.id] || 0} // Passez le nombre de likes
             />
           )}
@@ -136,8 +140,27 @@ const UserProfileScreen = ({ navigation }) => {
   );
 };
 
-const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments, onLike, likeCount }) => {
+const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments, onLikeToggle, likeCount }) => {
   const [visibleMenu, setVisibleMenu] = useState(null);
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    // Initialisez l'état du like pour cette publication
+    const checkLikeStatus = async () => {
+      try {
+        const likeCountResponse = await getLikeCount(publicationId);
+        setIsLiked(likeCountResponse.userHasLiked); // Déterminez si l'utilisateur a aimé ou non
+      } catch (error) {
+        console.error('Erreur lors de la récupération du statut de like :', error.message);
+      }
+    };
+    checkLikeStatus();
+  }, [publicationId]);
+
+  const toggleLike = () => {
+    setIsLiked(!isLiked);
+    onLikeToggle(isLiked);
+  };
 
   return (
     <View style={styles.publicationCard}>
@@ -182,9 +205,9 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
       <View style={styles.interactionRow}>
         <TouchableOpacity 
           style={styles.likeButton}
-          onPress={() => onLike(publicationId)}
+          onPress={toggleLike}
         >
-          <Text style={styles.likeText}>J'aime ({likeCount})</Text>
+          <Text style={styles.likeText}>{isLiked ? `Je n'aime plus (${likeCount})` : `J'aime (${likeCount})`}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.commentButton}
@@ -205,85 +228,8 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 16,
-  },
-  publicationsContainer: {
-    flex: 1,
-  },
-  publicationsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  publicationCard: {
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  userInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  publicationDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  publicationImage: {
-    width: '100%',
-    height: 200,
-  },
-  publicationDescription: {
-    padding: 8,
-    fontSize: 16,
-  },
-  interactionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 8,
-  },
-  likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  likeText: {
-    fontSize: 16,
-    color: '#007BFF',
-  },
-  commentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  commentText: {
-    fontSize: 16,
-    color: '#007BFF',
+    backgroundColor: '#f5f5f5',
+    padding: 10,
   },
   loader: {
     flex: 1,
@@ -293,6 +239,109 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     textAlign: 'center',
+    marginTop: 20,
+  },
+  publicationsContainer: {
+    flex: 1,
+  },
+  publicationsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  publicationCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  publicationDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  menuButton: {
+    padding: 5,
+  },
+  menuButtonText: {
+    fontSize: 18,
+  },
+  menu: {
+    position: 'absolute',
+    right: 0,
+    top: 40,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  menuItem: {
+    padding: 10,
+  },
+  menuItemText: {
+    fontSize: 16,
+  },
+  publicationImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  publicationDescription: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 10,
+  },
+  likeButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  likeText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  commentButton: {
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+    backgroundColor: '#28a745',
+    alignItems: 'center',
+  },
+  commentText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  interactionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
   },
 });
 
