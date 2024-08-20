@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext, memo } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
+import { addLike, getLikeCount } from '../services/LikeService'; // Assurez-vous que le chemin est correct
 import { Menu, IconButton, Divider } from 'react-native-paper';
 import CommentSection from './Comment'; // Importer le composant CommentSection
 
@@ -9,6 +10,7 @@ const UserProfileScreen = ({ navigation }) => {
   const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
   const userId = user ? user.id : null; // Obtenir l'ID utilisateur
   const [publications, setPublications] = useState([]);
+  const [likeCounts, setLikeCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedPublicationId, setExpandedPublicationId] = useState(null); // Gestion des commentaires étendus
@@ -19,7 +21,15 @@ const UserProfileScreen = ({ navigation }) => {
     try {
       const publicationsResponse = await getPublicationsByUserId(userId); // Récupérer les publications de l'utilisateur
       console.log('Publications Response:', publicationsResponse); // Vérifiez les données des publications
+
+      const likeCountsData = {};
+      for (const publication of publicationsResponse) {
+        const likeCountResponse = await getLikeCount(publication.id); // Obtenez le nombre de likes pour chaque publication
+        likeCountsData[publication.id] = likeCountResponse.likeCount; // Supposons que votre réponse contient un champ likeCount
+      }
+      
       setPublications(publicationsResponse);
+      setLikeCounts(likeCountsData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -48,6 +58,11 @@ const UserProfileScreen = ({ navigation }) => {
             try {
               await deletePublication(publicationId);
               setPublications(prev => prev.filter(pub => pub.id !== publicationId));
+              setLikeCounts(prev => {
+                const newCounts = { ...prev };
+                delete newCounts[publicationId];
+                return newCounts;
+              });
             } catch (err) {
               console.error('Erreur lors de la suppression de la publication :', err.message);
             }
@@ -60,6 +75,28 @@ const UserProfileScreen = ({ navigation }) => {
 
   const handleExpandComments = (publicationId) => {
     setExpandedPublicationId(expandedPublicationId === publicationId ? null : publicationId);
+  };
+
+  const handleLike = async (publicationId) => {
+    if (!userId) {
+      Alert.alert('Erreur', 'Vous devez être connecté pour aimer une publication.');
+      return;
+    }
+
+    try {
+      await addLike(publicationId, userId);
+      
+      // Mise à jour du nombre de likes
+      const updatedLikeCount = await getLikeCount(publicationId);
+      setLikeCounts(prev => ({
+        ...prev,
+        [publicationId]: updatedLikeCount.likeCount,
+      }));
+      
+      Alert.alert('Succès', 'Vous avez aimé la publication.');
+    } catch (error) {
+      Alert.alert('Erreur', error.message);
+    }
   };
 
   if (loading) {
@@ -89,6 +126,8 @@ const UserProfileScreen = ({ navigation }) => {
               navigation={navigation} // Passez la navigation prop
               expandedPublicationId={expandedPublicationId}
               handleExpandComments={() => handleExpandComments(item.id)} // Ajoutez la fonction d'expansion
+              onLike={handleLike} // Passez la fonction de like
+              likeCount={likeCounts[item.id] || 0} // Passez le nombre de likes
             />
           )}
         />
@@ -97,7 +136,7 @@ const UserProfileScreen = ({ navigation }) => {
   );
 };
 
-const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments }) => {
+const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments, onLike, likeCount }) => {
   const [visibleMenu, setVisibleMenu] = useState(null);
 
   return (
@@ -141,8 +180,11 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
       />
       <Text style={styles.publicationDescription}>{publicationDescription}</Text>
       <View style={styles.interactionRow}>
-        <TouchableOpacity style={styles.likeButton}>
-          <Text style={styles.likeText}>J'aime</Text>
+        <TouchableOpacity 
+          style={styles.likeButton}
+          onPress={() => onLike(publicationId)}
+        >
+          <Text style={styles.likeText}>J'aime ({likeCount})</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.commentButton}
@@ -232,14 +274,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   likeText: {
-    marginLeft: 5,
+    fontSize: 16,
+    color: '#007BFF',
   },
   commentButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   commentText: {
-    marginLeft: 5,
+    fontSize: 16,
+    color: '#007BFF',
   },
   loader: {
     flex: 1,
