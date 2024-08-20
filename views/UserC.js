@@ -1,19 +1,4 @@
-/*import React, { createContext, useState } from 'react';
 
-// Créez le contexte utilisateur
-export const UserContext = createContext();
-
-// Créez le fournisseur de contexte
-export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  return (
-    <UserContext.Provider value={{ user, setUser }}>
-      {children}
-    </UserContext.Provider>
-  );
-};
-*/
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -59,25 +44,4 @@ export const UserProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
-
-
-
-/*
-import React, { createContext, useState } from 'react';
-
-export const UserContext = createContext();
-
-export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState('');
-
-  return (
-    <UserContext.Provider value={{ user, setUser, token, setToken }}>
-      {children}
-    </UserContext.Provider>
-  );
-};
-*/
-
-
 

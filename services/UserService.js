@@ -11,12 +11,13 @@ export async function signup(userData) {
           },
       });
 
-      return response.dat
+      return response.data;
   } catch (error) {
-      console.error('Erreur lors de l\'inscription :', error.message);
+      console.error('Erreur lors de l\'inscription :', error);
       throw error;
   }
 }
+
 
 export async function signin(credentials) {
   try {

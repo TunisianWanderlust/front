@@ -399,7 +399,6 @@ export default function SignupScreen({ navigation }) {
       }
     });
   };
-
   const handleSignup = async () => {
     const formData = new FormData();
     formData.append('fullName', fullName);
@@ -416,15 +415,27 @@ export default function SignupScreen({ navigation }) {
     }
 
     try {
+      console.log('FormData:', formData);
       const response = await signup(formData);
-      const _id = response._id;
-      const userModel = new UserModel(_id, fullName, email, '', telephone);
-      await login(userModel, "");
-      navigation.navigate('Acceuil', { _id });
+      console.log('Response from server:', response);
+
+      if (response && response.user && response.user.id) {
+        const _id = response.user.id;
+        const userModel = new UserModel(_id, fullName, email, '', telephone);
+        await login(userModel, "");
+        navigation.navigate('Acceuil', { userId: userModel.id });
+      } else {
+        console.error('Signup failed: Invalid response from server.');
+      }
     } catch (error) {
-      console.error('Erreur lors de l\'inscription :', error.message);
+      console.error('Erreur lors de l\'inscription :', error);
     }
-  };
+};
+
+
+  
+  
+  
 
   return (
     <ImageBackground source={require('../assets/ok.png')} style={styles.background}>
