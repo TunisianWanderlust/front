@@ -14,12 +14,12 @@ import { UserContext } from './UserC';
 import { updateProfile } from '../services/UserService';
 import { launchImageLibrary } from 'react-native-image-picker';
 import UserModel from '../models/User';
-import { useNavigation } from '@react-navigation/native'; // Importez le hook useNavigation
+import { useNavigation } from '@react-navigation/native';
 
 export default function UpdateProfileScreen({ route }) {
   const { userId } = route.params;
   const { user } = useContext(UserContext);
-  const navigation = useNavigation(); // Utilisez le hook useNavigation
+  const navigation = useNavigation();
 
   if (!user) {
     return (
@@ -33,14 +33,15 @@ export default function UpdateProfileScreen({ route }) {
     user.id,
     user.fullName,
     user.email,
-    String(user.telephone || ''),
+    user.password,
+    String(user.telephone || ''), // Conversion en chaîne de caractères
     user.image || null,
     user.role
   );
 
   const [fullName, setFullName] = useState(currentUser.fullName || '');
   const [email, setEmail] = useState(currentUser.email || '');
-  const [telephone, setTelephone] = useState(String(currentUser.telephone || ''));
+  const [telephone, setTelephone] = useState(currentUser.telephone || ''); // Assurez-vous que c'est une chaîne
   const [image, setImage] = useState(currentUser.image || null);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -58,7 +59,7 @@ export default function UpdateProfileScreen({ route }) {
     if (user && user.image && user.image.startsWith('http')) {
       setImage(user.image);
     } else {
-      setImage(null); // Utiliser une image par défaut si l'URL est incorrecte
+      setImage(null);
     }
   }, [user]);
 
@@ -92,7 +93,6 @@ export default function UpdateProfileScreen({ route }) {
       const successMessage = await updateProfile(userId, formData, user.token);
       console.log(successMessage);
 
-      // Navigation vers AcceuilScreen après la mise à jour
       navigation.navigate('Acceuil');
     } catch (error) {
       console.error('Erreur lors de la mise à jour :', error.message);
@@ -216,9 +216,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 40,
     padding: 30,
   },
-  content: {
-    // Styles pour le conteneur de contenu
-  },
+  content: {},
   title: {
     fontSize: 24,
     fontWeight: 'bold',

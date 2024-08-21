@@ -431,12 +431,6 @@ export default function SignupScreen({ navigation }) {
       console.error('Erreur lors de l\'inscription :', error);
     }
 };
-
-
-  
-  
-  
-
   return (
     <ImageBackground source={require('../assets/ok.png')} style={styles.background}>
       <View style={styles.container}>
@@ -573,6 +567,42 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 });
+
+/*
+const handleSignup = async () => {
+    const formData = new FormData();
+    formData.append('fullName', fullName);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('telephone', telephone);
+
+    if (image) {
+      formData.append('source', {
+        uri: image.uri,
+        type: image.type,
+        name: image.fileName || 'photo.jpg',
+      });
+    }
+
+    try {
+      console.log('FormData:', formData);
+      const response = await signup(formData);
+      console.log('Response from server:', response);
+
+      const userId = response?.user?.id ?? null;
+      if (userId) {
+        const userModel = new UserModel(userId, fullName, email, '', telephone);
+        await login(userModel, "");
+        navigation.navigate('Acceuil', { userId: userModel.id });
+      } else {
+        console.error('Signup failed: Invalid response from server.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription :', error);
+    }
+};
+
+*/
 
 /*
 import React, { useState, useContext, useRef, useEffect } from 'react';

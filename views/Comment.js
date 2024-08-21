@@ -1,17 +1,24 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, Button, Alert } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { getCommentsByPublication, addComment, deleteComment, updateComment } from '../services/CommentService';
 import { UserContext } from './UserC';
 import { Menu, Divider, IconButton } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function CommentSection({ publicationId, expandedPublicationId, handleExpandComments }) {
-  const [comments, setComments] = useState({});
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
   const [visibleMenu, setVisibleMenu] = useState(null);
 
   const { user } = useContext(UserContext);
+
+  useEffect(() => {
+    if (expandedPublicationId === publicationId) {
+      fetchComments();
+    }
+  }, [expandedPublicationId]);
 
   const fetchComments = async () => {
     try {
@@ -139,27 +146,27 @@ export default function CommentSection({ publicationId, expandedPublicationId, h
                       style={styles.editCommentInput}
                       placeholder="Modifier le commentaire"
                     />
-                    <Button
-                      title="Enregistrer"
-                      onPress={() => handleEditComment(comment._id)}
-                    />
+                    <TouchableOpacity onPress={() => handleEditComment(comment._id)}>
+                      <Icon name="save" size={20} color="#000" />
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
             ))
           ) : (
-            <Text>Aucun commentaire</Text>
+            <Text style={styles.noCommentText}>Aucun commentaire</Text>
           )}
-          <TextInput
-            value={commentText}
-            onChangeText={setCommentText}
-            style={styles.commentInput}
-            placeholder="Ajouter un commentaire"
-          />
-          <Button
-            title="Ajouter"
-            onPress={handleAddComment}
-          />
+          <View style={styles.addCommentContainer}>
+            <TextInput
+              value={commentText}
+              onChangeText={setCommentText}
+              style={styles.commentInput}
+              placeholder="Ajouter un commentaire..."
+            />
+            <TouchableOpacity onPress={handleAddComment}>
+              <Icon name="send" size={20} color="#007bff" />
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
@@ -173,8 +180,10 @@ const styles = StyleSheet.create({
   commentCard: {
     marginBottom: 10,
     borderRadius: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f2f2f2',
     padding: 10,
+    borderColor: '#e1e1e1',
+    borderWidth: 1,
   },
   commentHeader: {
     flexDirection: 'row',
@@ -192,13 +201,18 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontWeight: 'bold',
+    fontSize: 14,
+    color: '#333',
   },
   commentText: {
     marginVertical: 5,
+    fontSize: 14,
+    color: '#555',
   },
   editCommentContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 5,
   },
   editCommentInput: {
     flex: 1,
@@ -209,10 +223,20 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   commentInput: {
+    flex: 1,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 5,
-    marginVertical: 10,
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  addCommentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  noCommentText: {
+    textAlign: 'center',
+    color: '#888',
   },
 });
