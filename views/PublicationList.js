@@ -168,12 +168,12 @@ export default function PublicationList({ route, navigation }) {
             <Text style={styles.description}>{item.description}</Text>
 
             <View style={styles.interactionRow}>
-              <TouchableOpacity 
+            <TouchableOpacity 
                 style={styles.likeButton}
                 onPress={() => handleLikeDislike(item._id)}
               >
-                <Text style={styles.likeText}>
-                  {userLikes[item._id] ? 'Je n\'aime plus' : 'J\'aime'} ({likeCounts[item._id] || 0})
+                <Text style={styles.likeButtonText}>
+                  {userLikes[item._id] ? '❤️' : '♡'} {likeCounts[item._id] || 0}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -271,10 +271,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  likeButton: {
-    backgroundColor: '#e0e0e0',
-    padding: 10,
-    borderRadius: 5,
+  likeButtonText: {
+    fontSize: 16,
   },
   likeText: {
     color: '#333',

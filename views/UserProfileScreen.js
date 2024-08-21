@@ -113,6 +113,18 @@ const UserProfileScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.userHeader}>
+        <Image 
+          source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
+          style={styles.userImage}
+          onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{user.fullName}</Text>
+          <Text style={styles.userEmail}>{user.email}</Text>
+          <Text style={styles.userPhone}>{user.telephone}</Text>
+        </View>
+      </View>
       <View style={styles.publicationsContainer}>
         <Text style={styles.publicationsTitle}>Publications</Text>
         <FlatList
@@ -203,11 +215,8 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
       />
       <Text style={styles.publicationDescription}>{publicationDescription}</Text>
       <View style={styles.interactionRow}>
-        <TouchableOpacity 
-          style={styles.likeButton}
-          onPress={toggleLike}
-        >
-          <Text style={styles.likeText}>{isLiked ? `Je n'aime plus (${likeCount})` : `J'aime (${likeCount})`}</Text>
+      <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
+          <Text style={styles.likeButtonText}>{isLiked ? '❤️' : '♡'} {likeCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.commentButton}
@@ -282,6 +291,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   menuButton: {
     padding: 5,
   },
@@ -317,11 +331,8 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 10,
   },
-  likeButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+  likeButtonText: {
+    fontSize: 16,
   },
   likeText: {
     color: '#fff',
