@@ -212,6 +212,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    backgroundColor: '#fff',
   },
   loader: {
     flex: 1,
@@ -223,15 +224,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   publicationCard: {
-    marginBottom: 15,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    padding: 10,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 20,
+    marginBottom: 16,
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 12,
+    elevation: 5,
   },
+  
+
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',

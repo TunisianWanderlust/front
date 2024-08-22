@@ -43,6 +43,8 @@ export default function ChangePasswordScreen({ route, navigation }) {
   return (
     <LinearGradient
       colors={['#507BE4', '#37A9B4', '#5CC7D2', '#89A6ED']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.container}
     >
       <Animated.View
@@ -71,7 +73,8 @@ export default function ChangePasswordScreen({ route, navigation }) {
             secureTextEntry
             mode="outlined"
             label="Ancien mot de passe"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            roundness: 100 }}
           />
 
           <PaperTextInput
@@ -82,7 +85,8 @@ export default function ChangePasswordScreen({ route, navigation }) {
             secureTextEntry
             mode="outlined"
             label="Nouveau mot de passe"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            roundness: 100 }}
           />
 
           <PaperTextInput
@@ -93,17 +97,21 @@ export default function ChangePasswordScreen({ route, navigation }) {
             secureTextEntry
             mode="outlined"
             label="Confirmer le nouveau mot de passe"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' } }}
+            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            roundness: 100 }}
           />
-
+<View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
             <LinearGradient
               colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={styles.gradientButton}
             >
               <Text style={styles.buttonText}>Changer le mot de passe</Text>
             </LinearGradient>
           </TouchableOpacity>
+          </View>
         </View>
       </Animated.View>
     </LinearGradient>
@@ -137,12 +145,21 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 15,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center', // Pour centrer les boutons horizontalement
+    alignItems: 'center', // Pour centrer les boutons verticalement
+    marginBottom: 10,
+  },
   button: {
-    marginTop: 20,
+    marginHorizontal: 5, // Pour ajouter un espace entre les boutons
   },
   gradientButton: {
     borderRadius: 200,
     padding: 15,
+    borderRadius: 200,
+    padding: 15,
+    width: 320,
     alignItems: 'center',
   },
   buttonText: {

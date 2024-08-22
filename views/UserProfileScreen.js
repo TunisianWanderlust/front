@@ -1,33 +1,32 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, StyleSheet } from 'react-native';
-import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
+import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { UserContext } from './UserC';
+import RNPickerSelect from 'react-native-picker-select';
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
-import { addLike, getLikeCount, removeLike } from '../services/LikeService'; // Assurez-vous que le chemin est correct
+import { addLike, getLikeCount, removeLike } from '../services/LikeService';
 import { Menu, IconButton, Divider } from 'react-native-paper';
-import CommentSection from './Comment'; // Importer le composant CommentSection
+import CommentSection from './Comment';
 
 const UserProfileScreen = ({ navigation }) => {
-  const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
-  const userId = user ? user.id : null; // Obtenir l'ID utilisateur
+  const { user, logout } = useContext(UserContext);
+  const userId = user ? user.id : null;
   const [publications, setPublications] = useState([]);
   const [likeCounts, setLikeCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expandedPublicationId, setExpandedPublicationId] = useState(null); // Gestion des commentaires étendus
+  const [expandedPublicationId, setExpandedPublicationId] = useState(null);
+  const [selectedValue, setSelectedValue] = useState(''); // Added state for Picker value
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const publicationsResponse = await getPublicationsByUserId(userId); // Récupérer les publications de l'utilisateur
-      console.log('Publications Response:', publicationsResponse); // Vérifiez les données des publications
-
+      const publicationsResponse = await getPublicationsByUserId(userId);
       const likeCountsData = {};
       for (const publication of publicationsResponse) {
-        const likeCountResponse = await getLikeCount(publication.id); // Obtenez le nombre de likes pour chaque publication
-        likeCountsData[publication.id] = likeCountResponse.likeCount; // Supposons que votre réponse contient un champ likeCount
+        const likeCountResponse = await getLikeCount(publication.id);
+        likeCountsData[publication.id] = likeCountResponse.likeCount;
       }
-      
       setPublications(publicationsResponse);
       setLikeCounts(likeCountsData);
     } catch (err) {
@@ -57,8 +56,8 @@ const UserProfileScreen = ({ navigation }) => {
           onPress: async () => {
             try {
               await deletePublication(publicationId);
-              setPublications(prev => prev.filter(pub => pub.id !== publicationId));
-              setLikeCounts(prev => {
+              setPublications((prev) => prev.filter((pub) => pub.id !== publicationId));
+              setLikeCounts((prev) => {
                 const newCounts = { ...prev };
                 delete newCounts[publicationId];
                 return newCounts;
@@ -90,9 +89,8 @@ const UserProfileScreen = ({ navigation }) => {
         await addLike(publicationId, userId);
       }
 
-      // Mise à jour du nombre de likes
       const updatedLikeCount = await getLikeCount(publicationId);
-      setLikeCounts(prev => ({
+      setLikeCounts((prev) => ({
         ...prev,
         [publicationId]: updatedLikeCount.likeCount,
       }));
@@ -102,9 +100,27 @@ const UserProfileScreen = ({ navigation }) => {
       Alert.alert('Erreur', error.message);
     }
   };
+  const handlePickerChange = async (value) => {
+    setSelectedValue(value);
+    switch (value) {
+      case 'UpdateProfile':
+        navigation.navigate('UpdateProfile', { userId: user.id });
+        break;
+      case 'ChangePassword':
+        navigation.navigate('ChangePassword', { userId: user.id });
+        break;
+      case 'Logout':
+        await logout();
+        navigation.navigate('Signin');
+        break;
+      default:
+        break;
+    }
+  };
+
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
+    return <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />;
   }
 
   if (error) {
@@ -112,6 +128,7 @@ const UserProfileScreen = ({ navigation }) => {
   }
 
   return (
+    
     <View style={styles.container}>
       <View style={styles.userHeader}>
         <Image 
@@ -121,15 +138,34 @@ const UserProfileScreen = ({ navigation }) => {
         />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user.fullName}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <Text style={styles.userPhone}>{user.telephone}</Text>
+         <Text style={styles.userEmail}>{user.email}</Text> 
+{/* <Text style={styles.userPhone}>{user.telephone}</Text> */}
+
+
         </View>
+        </View>
+        <View style={styles.menuContainer}>
+        <RNPickerSelect
+          onValueChange={(value) => handlePickerChange(value)}
+          items={[
+            
+            { label: 'Mettre à jour le profil', value: 'UpdateProfile' },
+            { label: 'Changer le mot de passe', value: 'ChangePassword' },
+            { label: 'Se déconnecter', value: 'Logout' },
+          ]}
+          placeholder={{ label: 'Paramétre' }} // This changes the default text
+          style={{
+            inputIOS: styles.picker,
+            inputAndroid: styles.picker,
+            placeholder: styles.placeholder,
+          }}
+        />
       </View>
       <View style={styles.publicationsContainer}>
-        <Text style={styles.publicationsTitle}>Publications</Text>
+        <Text style={styles.publicationsTitle}>Mes Publications</Text>
         <FlatList
           data={publications}
-          keyExtractor={(item) => item.id.toString()} // Utilisez l'ID de la publication
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <PublicationCard
               userImage={user.image}
@@ -138,12 +174,12 @@ const UserProfileScreen = ({ navigation }) => {
               publicationImage={item.image}
               publicationDescription={item.description}
               publicationDate={item.datePub}
-              onDelete={handleDeletePublication} // Passez la fonction de suppression
-              navigation={navigation} // Passez la navigation prop
+              onDelete={handleDeletePublication}
+              navigation={navigation}
               expandedPublicationId={expandedPublicationId}
-              handleExpandComments={() => handleExpandComments(item.id)} // Ajoutez la fonction d'expansion
-              onLikeToggle={(isLiked) => handleLikeToggle(item.id, isLiked)} // Passez la fonction de like toggle
-              likeCount={likeCounts[item.id] || 0} // Passez le nombre de likes
+              handleExpandComments={() => handleExpandComments(item.id)}
+              onLikeToggle={(isLiked) => handleLikeToggle(item.id, isLiked)}
+              likeCount={likeCounts[item.id] || 0}
             />
           )}
         />
@@ -155,13 +191,19 @@ const UserProfileScreen = ({ navigation }) => {
 const PublicationCard = memo(({ userImage, userName, publicationId, publicationImage, publicationDescription, publicationDate, onDelete, navigation, expandedPublicationId, handleExpandComments, onLikeToggle, likeCount }) => {
   const [visibleMenu, setVisibleMenu] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
+  const [animationValue] = useState(new Animated.Value(0));
 
   useEffect(() => {
-    // Initialisez l'état du like pour cette publication
+    Animated.timing(animationValue, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
     const checkLikeStatus = async () => {
       try {
         const likeCountResponse = await getLikeCount(publicationId);
-        setIsLiked(likeCountResponse.userHasLiked); // Déterminez si l'utilisateur a aimé ou non
+        setIsLiked(likeCountResponse.userHasLiked);
       } catch (error) {
         console.error('Erreur lors de la récupération du statut de like :', error.message);
       }
@@ -174,12 +216,24 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
     onLikeToggle(isLiked);
   };
 
+  const animatedStyle = {
+    opacity: animationValue,
+    transform: [
+      {
+        scale: animationValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.95, 1],
+        }),
+      },
+    ],
+  };
+
   return (
-    <View style={styles.publicationCard}>
+    <Animated.View style={[styles.publicationCard, animatedStyle]}>
       <View style={styles.cardHeader}>
         <Image 
           source={{ uri: userImage.replace('127.0.0.1', '192.168.1.21') }} 
-          style={styles.userImage}
+          style={styles.userIma}
           onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
         />
         <View style={styles.userInfo}>
@@ -215,7 +269,7 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
       />
       <Text style={styles.publicationDescription}>{publicationDescription}</Text>
       <View style={styles.interactionRow}>
-      <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
+        <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
           <Text style={styles.likeButtonText}>{isLiked ? '❤️' : '♡'} {likeCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -230,15 +284,127 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
         expandedPublicationId={expandedPublicationId}
         handleExpandComments={() => handleExpandComments(publicationId)}
       />
-    </View>
+    </Animated.View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 10,
+    backgroundColor: '#fff',
+  },
+  userHeader: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  userIma: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  userImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  userInfo: {
+    marginLeft: 16,
+    flex: 1,
+    
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  userPhone: {
+    fontSize: 14,
+    color: '#666',
+  },
+  publicationsContainer: {
+    flex: 1,
+    padding: 16,
+    
+  },
+  publicationsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  menuContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Assurez-vous que le Picker est aligné à droite
+    alignItems: 'right',
+    
+  },
+  
+
+  publicationCard: {
+    backgroundColor: '#fff',
+   // borderRadius: 8,
+    marginBottom: 1,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  /*cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },*/
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Change this to 'flex-start' to align items to the start (left)
+  },
+  
+  publicationImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginVertical: 16,
+  },
+  publicationDescription: {
+    fontSize: 16,
+    color: '#333',
+  },
+  interactionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeButtonText: {
+    fontSize: 16,
+    color: '#007AFF',
+    //color: '#e91e63',
+  },
+  commentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  commentText: {
+    fontSize: 16,
+    color: '#007AFF',
+  },
+  picker: {
+    width: 150,
+  },
+  placeholder: {
+    width: 155,
+    color: '#007AFF', // Changer la couleur du texte du placeholder ici
   },
   loader: {
     flex: 1,
@@ -250,110 +416,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
-  publicationsContainer: {
-    flex: 1,
-  },
-  publicationsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  publicationCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  publicationDate: {
-    fontSize: 12,
-    color: '#666',
-  },
-  userHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  menuButton: {
-    padding: 5,
-  },
-  menuButtonText: {
-    fontSize: 18,
-  },
-  menu: {
-    position: 'absolute',
-    right: 0,
-    top: 40,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  menuItem: {
-    padding: 10,
-  },
-  menuItemText: {
-    fontSize: 16,
-  },
-  publicationImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  publicationDescription: {
+  subMenuItem: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 10,
   },
-  likeButtonText: {
-    fontSize: 16,
-  },
-  likeText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  commentButton: {
-    padding: 10,
-    borderRadius: 5,
-    marginLeft: 10,
-    backgroundColor: '#28a745',
-    alignItems: 'center',
-  },
-  commentText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  interactionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
+
 });
 
 export default UserProfileScreen;
+
+

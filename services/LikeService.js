@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://192.168.1.21:9090'; // Remplacez par l'URL de votre API
+const API_BASE_URL = 'http://192.168.139.189:9090'; // Remplacez par l'URL de votre API
 
 export const addLike = async (publicationId, userId) => {
     try {

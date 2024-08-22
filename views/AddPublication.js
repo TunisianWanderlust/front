@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Picker } from '@react-native-picker/picker';
 
@@ -44,10 +44,6 @@ const AddPublication = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
-    console.log('Description:', description);
-    console.log('Nom de la Ville:', nomVille);
-    console.log('User ID:', user?.id);
-
     if (!description || !nomVille || !user?.id || !image) {
       Alert.alert('Champs requis', 'Veuillez remplir tous les champs.');
       return;
@@ -87,57 +83,149 @@ const AddPublication = ({ navigation, route }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Description:</Text>
-      <TextInput
-        style={styles.input}
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Entrez la description"
-      />
-      <Text style={styles.label}>Nom de la Ville:</Text>
-      <Picker
-        selectedValue={nomVille}
-        style={styles.picker}
-        onValueChange={(itemValue) => setNomVille(itemValue)}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.userContainer}>
+          <Image 
+            source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
+            style={styles.userImage}
+            onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+          />
+          <Text style={styles.userName}>{user.fullName}</Text>
+        </View>
+
+        <View style={styles.fieldContainer}>
+          {/*<Text style={styles.label}>Nom de la Ville:</Text>*/}
+          <Picker
+            selectedValue={nomVille}
+            style={styles.picker}
+            onValueChange={(itemValue) => setNomVille(itemValue)}
+          >
+            <Picker.Item label="Sélectionner une ville" value="" />
+            {villes.map((ville) => (
+              <Picker.Item key={ville._id} label={ville.nom} value={ville.nom} />
+            ))}
+          </Picker>
+        </View>
+
+        <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+          {image ? (
+            <Image source={{ uri: image.uri }} style={styles.image} />
+          ) : (
+            <Text style={styles.imagePickerText}>Choisir une image</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Description:</Text>
+          <TextInput
+            style={styles.input}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Entrez la description"
+            multiline
+          />
+        </View>
+      </ScrollView>
+
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handleSubmit}
       >
-        <Picker.Item label="Sélectionner une ville" value="" />
-        {villes.map((ville) => (
-          <Picker.Item key={ville._id} label={ville.nom} value={ville.nom} />
-        ))}
-      </Picker>
-      <Button title="Choisir une image" onPress={handleImagePick} />
-      {image && <Image source={{ uri: image.uri }} style={styles.image} />}
-      <Button title={publicationId ? "Mettre à jour la publication" : "Ajouter Publication"} onPress={handleSubmit} />
-    </ScrollView>
+        <Text style={styles.submitButtonText}>
+          {publicationId ? "Mettre à jour la publication" : "Ajouter Publication"}
+        </Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  userImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  userName: {
+    marginLeft: 15,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  imagePicker: {
+    marginBottom: 20,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+  },
+  imagePickerText: {
+    color: '#007BFF',
+    fontSize: 16,
+  },
+  fieldContainer: {
+    marginBottom: 20,
   },
   label: {
     marginBottom: 5,
     fontWeight: 'bold',
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    marginBottom: 15,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    height: 260,
+    textAlignVertical: 'top',
   },
   picker: {
     height: 50,
     width: '100%',
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginVertical: 10,
+  submitButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

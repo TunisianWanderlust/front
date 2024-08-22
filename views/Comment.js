@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   commentCard: {
     marginBottom: 10,
     borderRadius: 10,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#fff',
     padding: 10,
     borderColor: '#e1e1e1',
     borderWidth: 1,
