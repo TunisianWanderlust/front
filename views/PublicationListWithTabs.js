@@ -1,28 +1,56 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous que ce chemin est correct
-import PublicationList from './PublicationList'; // Assurez-vous que le chemin est correct
-import AddPublication from './AddPublication'; // Assurez-vous que le chemin est correct
-import UserProfileScreen from './UserProfileScreen'; // Assurez-vous que le chemin est correct
-import { UserContext } from './UserC'; // Assurez-vous que le chemin est correct
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import PublicationList from './PublicationList';
+import AddPublication from './AddPublication';
+import UserProfileScreen from './UserProfileScreen';
+import AcceuilScreen from './AcceuilScreen';
+import { UserContext } from './UserC';
 
 const Tab = createBottomTabNavigator();
 
 const PublicationListWithTabs = ({ route, navigation }) => {
-  const { user } = useContext(UserContext); // Obtenir l'utilisateur du contexte
-  const userId = user ? user.id : null; // Obtenir l'ID utilisateur
+  const { user } = useContext(UserContext);
+  const userId = user ? user.id : null;
 
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarItemStyle: styles.tabBarItem,
-        tabBarLabelStyle: styles.tabBarLabel,
-      }}
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+
+          switch (route.name) {
+            case 'Acceuil':
+              iconName = 'arrow-back';
+              break;
+            case 'Publications':
+              iconName = 'list';
+              break;
+            case 'AddPublication':
+              iconName = 'add-circle';
+              break;
+            case 'Profile':
+              iconName = 'person';
+              break;
+            default:
+              iconName = 'home';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarLabel: () => null, // Masquer les labels
+      })}
     >
-      <Tab.Screen name="Publications" component={PublicationList} initialParams={route.params} />
+      
+      <Tab.Screen 
+        name="Publications" 
+        component={PublicationList} 
+        initialParams={route.params} 
+      />
+      
       <Tab.Screen
         name="AddPublication"
         component={AddPublication}
@@ -41,13 +69,24 @@ const PublicationListWithTabs = ({ route, navigation }) => {
       <Tab.Screen
         name="Profile"
         component={UserProfileScreen}
-        initialParams={{ userId }} // Passer l'ID utilisateur en paramètre
+        initialParams={{ userId }}
+      />
+            <Tab.Screen
+        name="Acceuil"
+        component={AcceuilScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="person" color={color} size={size} />
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              style={styles.navButton}
+              onPress={() => navigation.navigate('Acceuil')}
+            >
+              <Icon name="arrow-back" size={30} color="black" />
+            </TouchableOpacity>
           ),
         }}
       />
+
     </Tab.Navigator>
   );
 };
@@ -56,17 +95,17 @@ const styles = StyleSheet.create({
   tabBar: {
     height: 60,
     paddingVertical: 5,
-  },
-  tabBarItem: {
-    marginHorizontal: 10,
-  },
-  tabBarLabel: {
-    fontSize: 12,
+    // Ajustez le fond ou d'autres styles de la barre ici si nécessaire
   },
   addButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    bottom: 10,
+    marginBottom: 10, // Ajuster l'espacement du bas pour centrer le bouton
+  },
+  navButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10, // Ajuster l'espacement du bas pour centrer le bouton
   },
 });
 

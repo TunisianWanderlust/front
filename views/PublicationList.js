@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { getPublicationsByNomVille, deletePublication } from '../services/PublicationService';
-import { addLike, removeLike, getLikeCount } from '../services/LikeService'; // Import removeLike
+import { addLike, removeLike, getLikeCount } from '../services/LikeService';
 import { UserContext } from './UserC';
 import { Menu, Divider, IconButton } from 'react-native-paper';
 import CommentSection from './Comment';
+import { format } from 'date-fns';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { fr } from 'date-fns/locale';
 
 export default function PublicationList({ route, navigation }) {
   const { nomVille } = route.params;
@@ -14,7 +17,7 @@ export default function PublicationList({ route, navigation }) {
   const [expandedPublicationId, setExpandedPublicationId] = useState(null);
   const [visibleMenu, setVisibleMenu] = useState(null);
   const [likeCounts, setLikeCounts] = useState({});
-  const [userLikes, setUserLikes] = useState({}); // Track user likes
+  const [userLikes, setUserLikes] = useState({});
 
   const { user } = useContext(UserContext);
 
@@ -30,7 +33,7 @@ export default function PublicationList({ route, navigation }) {
           const likeCount = await getLikeCount(publication._id);
           likeCountsData[publication._id] = likeCount.likeCount;
           if (user) {
-            const hasLiked = await checkUserLike(publication._id, user.id); // Function to check if the user has liked
+            const hasLiked = await checkUserLike(publication._id, user.id);
             userLikesData[publication._id] = hasLiked;
           }
         }
@@ -93,7 +96,6 @@ export default function PublicationList({ route, navigation }) {
 
     try {
       if (userLikes[publicationId]) {
-        // User has already liked, so remove the like
         await removeLike(publicationId, user.id);
         Alert.alert('Succès', 'Vous avez retiré votre like.');
         setLikeCounts(prev => ({
@@ -101,7 +103,6 @@ export default function PublicationList({ route, navigation }) {
           [publicationId]: (prev[publicationId] || 0) - 1
         }));
       } else {
-        // User has not liked yet, so add the like
         const result = await addLike(publicationId, user.id);
         if (result.message === 'Vous avez déjà aimé cette publication') {
           Alert.alert('Déjà aimé', result.message);
@@ -114,7 +115,6 @@ export default function PublicationList({ route, navigation }) {
         }
       }
 
-      // Update userLikes state
       setUserLikes(prev => ({
         ...prev,
         [publicationId]: !prev[publicationId]
@@ -126,7 +126,6 @@ export default function PublicationList({ route, navigation }) {
   };
 
   const checkUserLike = async (publicationId, userId) => {
-    // Function to check if the user has liked a publication
     // Implement this function in your LikeService
   };
 
@@ -139,72 +138,82 @@ export default function PublicationList({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={publications}
-        keyExtractor={(item) => (item._id ? item._id.toString() : Math.random().toString())}
-        renderItem={({ item }) => (
-          <View style={styles.publicationCard}>
-            <View style={styles.cardHeader}>
-              {item.userId.image ? (
-                <Image source={{ uri: item.userId.image.replace('127.0.0.1', '192.168.1.21') }} style={styles.userImage} />
-              ) : (
-                <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.userImage} />
-              )}
-              <View style={styles.userInfo}>
-                <Text style={styles.userName}>{item.userId.fullName}</Text>
-                <Text style={styles.publicationDate}>{new Date(item.datePub).toLocaleDateString()}</Text>
-              </View>
-            </View>
-            {item.image ? (
-              <Image 
-                source={{ uri: item.image.replace('127.0.0.1', '192.168.1.21') }} 
-                style={styles.publicationImage}
-                onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
-              />
+    <ScrollView style={styles.container}>
+      <View style={styles.userHeader}>
+        <Image 
+          source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
+          style={styles.userImage}
+          onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{user.fullName}</Text>
+        </View>
+      </View>
+      {publications.map((item) => (
+        <View key={item._id} style={styles.publicationCard}>
+          <View style={styles.cardHeader}>
+            {item.userId.image ? (
+              <Image source={{ uri: item.userId.image.replace('127.0.0.1', '192.168.1.21') }} style={styles.userImage} />
             ) : (
-              <Text style={styles.noImageText}>Aucune image disponible</Text>
+              <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.userImage} />
             )}
-            <Text style={styles.description}>{item.description}</Text>
-
-            <View style={styles.interactionRow}>
-            <TouchableOpacity 
-                style={styles.likeButton}
-                onPress={() => handleLikeDislike(item._id)}
-              >
-                <Text style={styles.likeButtonText}>
-                  {userLikes[item._id] ? '❤️' : '♡'} {likeCounts[item._id] || 0}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.commentButton}
-                onPress={() => handleExpandComments(item._id)}
-              >
-                <Text style={styles.commentText}>Commenter</Text>
-              </TouchableOpacity>
-
-              {user && user.id === item.userId._id && (
-                <Menu
-                  visible={visibleMenu === item._id}
-                  onDismiss={() => setVisibleMenu(null)}
-                  anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(item._id)} />}
-                >
-                  <Menu.Item onPress={() => { setVisibleMenu(null); navigation.navigate('AddPublication', { publicationId: item._id }); }} title="Modifier" />
-                  <Divider />
-                  <Menu.Item onPress={() => { setVisibleMenu(null); handleDeletePublication(item._id); }} title="Supprimer" />
-                </Menu>
-              )}
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{item.userId.fullName}</Text>
+              <Text style={styles.publicationDate}>{format(new Date(item.datePub), "dd MMMM", { locale: fr })}</Text>
             </View>
-
-            <CommentSection
-              publicationId={item._id}
-              expandedPublicationId={expandedPublicationId}
-              handleExpandComments={() => handleExpandComments(item._id)}
-            />
+            {user && user.id === item.userId._id && (
+              <Menu
+                visible={visibleMenu === item._id}
+                onDismiss={() => setVisibleMenu(null)}
+                anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(item._id)} />}
+              >
+                <Menu.Item onPress={() => { setVisibleMenu(null); navigation.navigate('AddPublication', { publicationId: item._id }); }} title="Modifier" />
+                <Divider />
+                <Menu.Item onPress={() => { setVisibleMenu(null); handleDeletePublication(item._id); }} title="Supprimer" />
+              </Menu>
+            )}
           </View>
-        )}
-      />
-    </View>
+          {item.image ? (
+            <Image 
+              source={{ uri: item.image.replace('127.0.0.1', '192.168.1.21') }} 
+              style={styles.publicationImage}
+              onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
+            />
+          ) : (
+            <Text style={styles.noImageText}>Aucune image disponible</Text>
+          )}
+          <Text style={styles.description}>{item.description}</Text>
+
+          <View style={styles.interactionRow}>
+            <TouchableOpacity 
+              style={styles.likeButton}
+              onPress={() => handleLikeDislike(item._id)}
+            >
+              <Text style={styles.likeButtonText}>
+                {userLikes[item._id] ? '❤️' : '♡'} {likeCounts[item._id] || 0}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.commentButton}
+              onPress={() => handleExpandComments(item._id)}
+            >
+              <Icon 
+                name="comment" 
+                size={24} 
+                color="#007bff" 
+              />
+            </TouchableOpacity>
+          </View>
+
+          <CommentSection
+            publicationId={item._id}
+            expandedPublicationId={expandedPublicationId}
+            handleExpandComments={() => handleExpandComments(item._id)}
+          />
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -214,58 +223,42 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
   },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-  },
-  publicationCard: {
-    backgroundColor: '#f8f8f8',
-    borderRadius: 20,
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  
-
-  cardHeader: {
+  userHeader: {
     flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#fff',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginRight: 10,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 10,
   },
   userName: {
     fontWeight: 'bold',
   },
-  publicationDate: {
-    color: 'gray',
-    fontSize: 12,
+  publicationCard: {
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 10,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   publicationImage: {
     width: '100%',
     height: 200,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  noImageText: {
-    color: 'gray',
-    textAlign: 'center',
-    marginVertical: 10,
+    resizeMode: 'cover',
+    marginBottom: 10,
   },
   description: {
     marginBottom: 10,
@@ -275,20 +268,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   likeButtonText: {
     fontSize: 16,
+    color: '#007AFF',
+    //color: '#e91e63',
+    marginLeft: 5,
   },
-  likeText: {
-    color: '#333',
-  },
+  
   commentButton: {
-    backgroundColor: '#e0e0e0',
-    padding: 10,
-    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 5,
   },
-  commentText: {
-    color: '#333',
+  noImageText: {
+    textAlign: 'center',
+    color: '#888',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
-
-

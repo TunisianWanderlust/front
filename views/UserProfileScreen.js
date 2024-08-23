@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext, memo } from 'react';
 import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { UserContext } from './UserC';
-import RNPickerSelect from 'react-native-picker-select';
 import { getPublicationsByUserId, deletePublication } from '../services/PublicationService';
 import { addLike, getLikeCount, removeLike } from '../services/LikeService';
 import { Menu, IconButton, Divider } from 'react-native-paper';
 import CommentSection from './Comment';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Import Icon
 
 const UserProfileScreen = ({ navigation }) => {
   const { user, logout } = useContext(UserContext);
@@ -15,7 +17,7 @@ const UserProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedPublicationId, setExpandedPublicationId] = useState(null);
-  const [selectedValue, setSelectedValue] = useState(''); // Added state for Picker value
+  const [visibleMenu, setVisibleMenu] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -100,9 +102,10 @@ const UserProfileScreen = ({ navigation }) => {
       Alert.alert('Erreur', error.message);
     }
   };
-  const handlePickerChange = async (value) => {
-    setSelectedValue(value);
-    switch (value) {
+
+  const handleMenuOption = async (option) => {
+    setVisibleMenu(false);
+    switch (option) {
       case 'UpdateProfile':
         navigation.navigate('UpdateProfile', { userId: user.id });
         break;
@@ -118,7 +121,6 @@ const UserProfileScreen = ({ navigation }) => {
     }
   };
 
-
   if (loading) {
     return <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />;
   }
@@ -128,63 +130,53 @@ const UserProfileScreen = ({ navigation }) => {
   }
 
   return (
-    
-    <View style={styles.container}>
-      <View style={styles.userHeader}>
-        <Image 
-          source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
-          style={styles.userImage}
-          onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
-        />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.fullName}</Text>
-         <Text style={styles.userEmail}>{user.email}</Text> 
-{/* <Text style={styles.userPhone}>{user.telephone}</Text> */}
-
-
+    <FlatList
+      ListHeaderComponent={
+        <View style={styles.userHeader}>
+          <Image
+            source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }}
+            style={styles.userImage}
+            onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)}
+          />
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{user.fullName}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+          </View>
+          <View style={styles.menuContainer}>
+            <Menu
+              visible={visibleMenu}
+              onDismiss={() => setVisibleMenu(false)}
+              anchor={<IconButton icon="dots-vertical" size={24} onPress={() => setVisibleMenu(!visibleMenu)} />}
+            >
+              <Menu.Item onPress={() => handleMenuOption('UpdateProfile')} title="Mettre à jour le profil" />
+              <Divider />
+              <Menu.Item onPress={() => handleMenuOption('ChangePassword')} title="Changer le mot de passe" />
+              <Divider />
+              <Menu.Item onPress={() => handleMenuOption('Logout')} title="Se déconnecter" />
+            </Menu>
+          </View>
         </View>
-        </View>
-        <View style={styles.menuContainer}>
-        <RNPickerSelect
-          onValueChange={(value) => handlePickerChange(value)}
-          items={[
-            
-            { label: 'Mettre à jour le profil', value: 'UpdateProfile' },
-            { label: 'Changer le mot de passe', value: 'ChangePassword' },
-            { label: 'Se déconnecter', value: 'Logout' },
-          ]}
-          placeholder={{ label: 'Paramétre' }} // This changes the default text
-          style={{
-            inputIOS: styles.picker,
-            inputAndroid: styles.picker,
-            placeholder: styles.placeholder,
-          }}
+      }
+      data={publications}
+      keyExtractor={(item) => item.id.toString()}
+      ListHeaderComponentStyle={styles.headerComponent}
+      renderItem={({ item }) => (
+        <PublicationCard
+          userImage={user.image}
+          userName={user.fullName}
+          publicationId={item.id}
+          publicationImage={item.image}
+          publicationDescription={item.description}
+          publicationDate={item.datePub}
+          onDelete={handleDeletePublication}
+          navigation={navigation}
+          expandedPublicationId={expandedPublicationId}
+          handleExpandComments={() => handleExpandComments(item.id)}
+          onLikeToggle={(isLiked) => handleLikeToggle(item.id, isLiked)}
+          likeCount={likeCounts[item.id] || 0}
         />
-      </View>
-      <View style={styles.publicationsContainer}>
-        <Text style={styles.publicationsTitle}>Mes Publications</Text>
-        <FlatList
-          data={publications}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <PublicationCard
-              userImage={user.image}
-              userName={user.fullName}
-              publicationId={item.id}
-              publicationImage={item.image}
-              publicationDescription={item.description}
-              publicationDate={item.datePub}
-              onDelete={handleDeletePublication}
-              navigation={navigation}
-              expandedPublicationId={expandedPublicationId}
-              handleExpandComments={() => handleExpandComments(item.id)}
-              onLikeToggle={(isLiked) => handleLikeToggle(item.id, isLiked)}
-              likeCount={likeCounts[item.id] || 0}
-            />
-          )}
-        />
-      </View>
-    </View>
+      )}
+    />
   );
 };
 
@@ -238,28 +230,16 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
         />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.publicationDate}>{new Date(publicationDate).toLocaleDateString()}</Text>
+          <Text style={styles.publicationDate}>
+            {format(new Date(publicationDate), "dd MMMM", { locale: fr })}
+          </Text>
         </View>
         <Menu
           visible={visibleMenu === publicationId}
           onDismiss={() => setVisibleMenu(null)}
           anchor={<IconButton icon="dots-vertical" size={20} onPress={() => setVisibleMenu(publicationId)} />}
         >
-          <Menu.Item
-            onPress={() => {
-              setVisibleMenu(null);
-              navigation.navigate('AddPublication', { publicationId });
-            }}
-            title="Modifier"
-          />
-          <Divider />
-          <Menu.Item
-            onPress={() => {
-              setVisibleMenu(null);
-              onDelete(publicationId);
-            }}
-            title="Supprimer"
-          />
+          <Menu.Item onPress={() => onDelete(publicationId)} title="Supprimer" />
         </Menu>
       </View>
       <Image 
@@ -276,7 +256,11 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
           style={styles.commentButton}
           onPress={() => handleExpandComments(publicationId)}
         >
-          <Text style={styles.commentText}>Commenter</Text>
+          <Icon 
+            name="comment" 
+            size={24} 
+            color="#007bff" 
+          />
         </TouchableOpacity>
       </View>
       <CommentSection
@@ -287,7 +271,6 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
     </Animated.View>
   );
 });
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -342,7 +325,9 @@ const styles = StyleSheet.create({
     alignItems: 'right',
     
   },
-  
+  publicationDate: {
+    color: '#666',
+  },
 
   publicationCard: {
     backgroundColor: '#fff',
@@ -385,15 +370,18 @@ const styles = StyleSheet.create({
   likeButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    
   },
   likeButtonText: {
     fontSize: 16,
     color: '#007AFF',
     //color: '#e91e63',
+    marginLeft: 5,
   },
   commentButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 5,
   },
   commentText: {
     fontSize: 16,
