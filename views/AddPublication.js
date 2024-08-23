@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Picker } from '@react-native-picker/picker';
-
+import LinearGradient from 'react-native-linear-gradient';
 import { UserContext } from './UserC';
 import { addPublication, updatePublication } from '../services/PublicationService';
 import { getVilles } from '../services/VilleService';
@@ -127,18 +127,27 @@ const AddPublication = ({ navigation, route }) => {
             onChangeText={setDescription}
             placeholder="Entrez la description"
             multiline
+            
           />
         </View>
       </ScrollView>
 
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={handleSubmit}
+      <View style={styles.buttonContainer}
+      
       >
-        <Text style={styles.submitButtonText}>
-          {publicationId ? "Mettre à jour la publication" : "Ajouter Publication"}
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+              {publicationId ? "Mettre à jour la publication" : "Ajouter Publication"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          </View>
     </KeyboardAvoidingView>
   );
 };
@@ -173,13 +182,17 @@ const styles = StyleSheet.create({
   },
   imagePicker: {
     marginBottom: 20,
-    borderRadius: 8,
+    borderRadius: 20,
     padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
   },
   image: {
     width: '100%',
@@ -202,7 +215,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 20,
     backgroundColor: '#fff',
     height: 260,
     textAlignVertical: 'top',
@@ -212,7 +225,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 20,
     backgroundColor: '#fff',
   },
   submitButton: {
@@ -226,6 +239,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center', // Pour centrer les boutons horizontalement
+    alignItems: 'center', // Pour centrer les boutons verticalement
+    marginBottom: 10,
+  },
+  button: {
+    marginHorizontal: 5, // Pour ajouter un espace entre les boutons
+  },
+  gradientButton: {
+    borderRadius: 200,
+    padding: 15,
+    borderRadius: 200,
+    padding: 15,
+    width: 320,
+    alignItems: 'center',
   },
 });
 

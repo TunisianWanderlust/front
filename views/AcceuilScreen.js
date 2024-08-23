@@ -176,6 +176,7 @@ export default function AcceuilScreen({ navigation }) {
           {error && <Text style={styles.error}>{error}</Text>}
           <ScrollView contentContainerStyle={styles.villeContainer}>
             <Text style={styles.villeDescription}>{villeDetails.description}</Text>
+            
 
             {/* Fixed gradient button */}
             <View style={styles.buttonContainer}>
@@ -197,7 +198,6 @@ export default function AcceuilScreen({ navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -205,11 +205,11 @@ const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
     resizeMode: 'cover',
-    justifyContent: 'center',
   },
   appbarHeader: {
     height: 56,
     justifyContent: 'center',
+    
   },
   menu: {
     marginTop: 56,
@@ -232,16 +232,26 @@ const styles = StyleSheet.create({
   },
   villeContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start', // Permet de commencer en haut
+    alignItems: 'center', // Centre horizontalement
     padding: 16,
   },
   villeDescription: {
-    fontSize: 14,
-    color: 'black',
+    fontSize: 22,
+    //color: '#ece4e2',
+    //color: '#d0d0d0',
+    color: '#bdbdbd',
     textAlign: 'center',
-    marginBottom: 8,
+    marginTop: 180,
+    fontStyle: 'italic',
+    fontWeight: '600', // Texte semi-gras
+    textShadowColor: '#333', // Couleur de l'ombre
+    textShadowOffset: { width: 2, height: 2 }, // Décalage plus marqué
+    textShadowRadius: 4, // Rayon plus large pour une ombre plus douce
   },
+  
+  
+  
   error: {
     color: 'red',
   },
