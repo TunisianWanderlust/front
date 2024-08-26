@@ -1,17 +1,18 @@
+
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
 import { Appbar, Menu, Divider, ActivityIndicator } from 'react-native-paper';
 import { UserContext } from './UserC';
 import { Picker } from '@react-native-picker/picker';
 import { getVilleById, getVilles } from '../services/VilleService';
-import LinearGradient from 'react-native-linear-gradient'; // Assurez-vous que ce package est installé
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function AcceuilScreen({ navigation }) {
   const { user, logout } = useContext(UserContext);
   const [visible, setVisible] = useState(false);
   const [showSubMenu, setShowSubMenu] = useState(false);
   const [villes, setVilles] = useState([]);
-  const [selectedVille, setSelectedVille] = useState(''); // Ville par défaut
+  const [selectedVille, setSelectedVille] = useState('');
   const [villeDetails, setVilleDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -26,7 +27,6 @@ export default function AcceuilScreen({ navigation }) {
         const data = await getVilles();
         setVilles(data);
 
-        // Assurez-vous que l'ID de Tunis est utilisé comme valeur par défaut
         const tunisVille = data.find(ville => ville.nom.toLowerCase() === 'tunis');
         if (tunisVille) {
           setSelectedVille(tunisVille._id);
@@ -48,7 +48,6 @@ export default function AcceuilScreen({ navigation }) {
           const data = await getVilleById(selectedVille);
           setVilleDetails(data);
 
-          // Message pour le nom
           if (data.nom) {
             setNomMessage(`Nom récupéré avec succès : ${data.nom}`);
             console.log(`Nom récupéré avec succès : ${data.nom}`);
@@ -57,7 +56,6 @@ export default function AcceuilScreen({ navigation }) {
             console.error('Erreur : Nom non disponible');
           }
 
-          // Message pour la description
           if (data.description) {
             setDescriptionMessage(`Description récupérée avec succès : ${data.description}`);
             console.log(`Description récupérée avec succès : ${data.description}`);
@@ -66,12 +64,11 @@ export default function AcceuilScreen({ navigation }) {
             console.error('Erreur : Description non disponible');
           }
 
-          // Message pour l'image
           if (data.image) {
-            const imageUrl = data.image.replace('127.0.0.1', '192.168.1.21'); // Remplacez par l'adresse IP locale de votre machine
+            const imageUrl = data.image.replace('127.0.0.1', '192.168.1.21');
             setImageMessage(`Image récupérée avec succès : ${imageUrl}`);
             console.log(`Image récupérée avec succès : ${imageUrl}`);
-            setVilleDetails({ ...data, image: imageUrl }); // Mettez à jour les détails de la ville avec l'URL d'image correcte
+            setVilleDetails({ ...data, image: imageUrl });
           } else {
             setImageMessage('Erreur : Image non disponible');
             console.error('Erreur : Image non disponible');
@@ -174,11 +171,11 @@ export default function AcceuilScreen({ navigation }) {
 
           {loading && <ActivityIndicator size="large" color="#0000ff" />}
           {error && <Text style={styles.error}>{error}</Text>}
-          <ScrollView contentContainerStyle={styles.villeContainer}>
+
+          <View style={styles.villeContainer}>
             <Text style={styles.villeDescription}>{villeDetails.description}</Text>
             
-
-            {/* Fixed gradient button */}
+            {/* Existing "c'est partie" button */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PublicationList', { nomVille: villeDetails.nom })}>
                 <LinearGradient
@@ -192,12 +189,27 @@ export default function AcceuilScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-          </ScrollView>
+            {/* New "voir categorie" button */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CategoriesScreen', { nomVille: villeDetails.nom })}>
+                <LinearGradient
+                  colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientButton}
+                >
+                  <Text style={styles.buttonText}>voir categorie</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+          </View>
         </ImageBackground>
       )}
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -209,7 +221,6 @@ const styles = StyleSheet.create({
   appbarHeader: {
     height: 56,
     justifyContent: 'center',
-    
   },
   menu: {
     marginTop: 56,
@@ -232,35 +243,28 @@ const styles = StyleSheet.create({
   },
   villeContainer: {
     flex: 1,
-    justifyContent: 'flex-start', // Permet de commencer en haut
-    alignItems: 'center', // Centre horizontalement
+    justifyContent: 'center', // Centrally align the content
+    alignItems: 'center', // Center horizontally
     padding: 16,
   },
   villeDescription: {
     fontSize: 22,
-    //color: '#ece4e2',
-    //color: '#d0d0d0',
     color: '#bdbdbd',
     textAlign: 'center',
     marginTop: 180,
     fontStyle: 'italic',
-    fontWeight: '600', // Texte semi-gras
-    textShadowColor: '#333', // Couleur de l'ombre
-    textShadowOffset: { width: 2, height: 2 }, // Décalage plus marqué
-    textShadowRadius: 4, // Rayon plus large pour une ombre plus douce
+    fontWeight: '600', // Semi-bold text
+    textShadowColor: '#333', // Shadow color
+    textShadowOffset: { width: 2, height: 2 }, // More pronounced offset
+    textShadowRadius: 4, // Wider radius for a softer shadow
   },
-  
-  
-  
   error: {
     color: 'red',
   },
   buttonContainer: {
-    flex: 1,
-    justifyContent: 'flex-end', // Positionner le bouton au bas de l'écran
+    marginVertical: 10, // Add some spacing between buttons
     alignItems: 'center',
     width: '100%',
-    marginBottom: 20, // Ajuster l'espacement depuis le bas
   },
   button: {
     marginHorizontal: 5,
@@ -268,11 +272,22 @@ const styles = StyleSheet.create({
   gradientButton: {
     borderRadius: 200,
     padding: 15,
-    width: 320,
+    width: 250,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 8,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
 });
+

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = 'http://192.168.1.21:9090';
+const API_BASE_URL = 'http://192.168.74.1:9090';
 
 // Fonction pour récupérer les publications par le nom de la ville
 export const getPublicationsByNomVille = async (nomVille) => {

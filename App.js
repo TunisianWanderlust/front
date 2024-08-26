@@ -14,6 +14,8 @@ import ChangePasswordScreen from './views/ChangePasswordScreen';
 import PublicationListWithTabs from './views/PublicationListWithTabs';
 import AddPublication from './views/AddPublication';
 import UserProfileScreen from './views/UserProfileScreen';
+import CategoriesScreen from './views/CategoriesScreen';
+import CategorieDescriptionScreen from './views/CategorieDescriptionScreen';
 
 
 const Stack = createStackNavigator();
@@ -37,6 +39,8 @@ const App = () => {
             <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
             <Stack.Screen name="PublicationList" component={PublicationListWithTabs} />
             <Stack.Screen name="UserProfileScreen" component={UserProfileScreen} />
+            <Stack.Screen name="CategoriesScreen" component={CategoriesScreen} />
+            <Stack.Screen name="CategorieDescriptionScreen" component={CategorieDescriptionScreen} />
 
           </Stack.Navigator>
         </NavigationContainer>
