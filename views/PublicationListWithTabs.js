@@ -27,7 +27,7 @@ const PublicationListWithTabs = ({ route, navigation }) => {
               iconName = 'arrow-back';
               break;
             case 'Publications':
-              iconName = 'list';
+              iconName = 'home';
               break;
             case 'AddPublication':
               iconName = 'add-circle';
@@ -93,19 +93,20 @@ const PublicationListWithTabs = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 70,
+    height: 60,
     paddingVertical: 1,
+    marginBottom:15,
     // Ajustez le fond ou d'autres styles de la barre ici si nécessaire
   },
   addButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10, // Ajuster l'espacement du bas pour centrer le bouton
+    marginBottom: 8, // Ajuster l'espacement du bas pour centrer le bouton
   },
   navButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10, // Ajuster l'espacement du bas pour centrer le bouton
+    marginBottom: 8, // Ajuster l'espacement du bas pour centrer le bouton
   },
 });
 

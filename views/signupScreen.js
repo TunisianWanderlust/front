@@ -434,79 +434,89 @@ export default function SignupScreen({ navigation }) {
   return (
     <ImageBackground source={require('../assets/ok.png')} style={styles.background}>
       <View style={styles.container}>
-        <Text style={styles.title}>Sign Up</Text>
+        <Text style={styles.title}>Créer un compte </Text>
         
         <View style={styles.inputContainer}>
-          <Icon name="person-outline" size={20} color="#000" style={styles.icon} />
+          <Icon name="person-outline" size={20} color="#507BE4" style={styles.icon} />
           <TextInput
             style={styles.input}
             value={fullName}
             onChangeText={setFullName}
-            placeholder="Full Name"
+            placeholder="Nom et prénom"
             placeholderTextColor="#000"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Icon name="mail-outline" size={20} color="#000" style={styles.icon} />
+          <Icon name="mail-outline" size={20} color="#507BE4" style={styles.icon} />
           <TextInput
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="Email"
+            placeholder="E-mail"
             placeholderTextColor="#000"
             keyboardType="email-address"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Icon name="lock-closed-outline" size={20} color="#000" style={styles.icon} />
+          <Icon name="lock-closed-outline" size={20} color="#507BE4" style={styles.icon} />
           <TextInput
             style={styles.input}
             value={password}
             onChangeText={setPassword}
-            placeholder="Password"
+            placeholder="Mot de passe"
             placeholderTextColor="#000"
             secureTextEntry
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Icon name="call-outline" size={20} color="#000" style={styles.icon} />
+          <Icon name="call-outline" size={20} color="#507BE4" style={styles.icon} />
           <TextInput
             style={styles.input}
             value={telephone}
             onChangeText={setTelephone}
-            placeholder="Phone Number"
+            placeholder="Numéro de téléphone"
             placeholderTextColor="#000"
             keyboardType="phone-pad"
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
-          <LinearGradient
-            colors={['#4c669f', '#3b5998', '#192f6a']}
-            style={styles.gradient}
-          >
-            <Text style={styles.buttonText}>Choose Image</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+       {/* <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>Choisir Image</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
         {image && (
           <Image
             source={{ uri: image.uri }}
             style={styles.imagePreview}
           />
-        )}
-
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <LinearGradient
-            colors={['#4c669f', '#3b5998', '#192f6a']}
-            style={styles.gradient}
-          >
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </LinearGradient>
+        )}*/}
+        <TouchableOpacity style={styles.imagePicker} onPress={handleImagePicker}>
+          {image ? (
+            <Image source={{ uri: image.uri }} style={styles.image} />
+          ) : (
+            <Text style={styles.imagePickerText}>Choisir une image</Text>
+          )}
         </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
+            <LinearGradient
+              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+               <Text style={styles.buttonText}>S'inscrire</Text>
+            </LinearGradient>
+          </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -522,9 +532,9 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '80%',
-    padding: 20,
+    padding: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 10,
+    borderRadius: 60,
   },
   title: {
     fontSize: 24,
@@ -548,23 +558,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    marginTop: 20,
+    marginHorizontal: 5,
+    marginVertical:5,
+    alignItems: 'center',
   },
-  gradient: {
-    paddingVertical: 10,
-    borderRadius: 5,
+  gradientButton: {
+    borderRadius: 200,
+    padding: 15,
+    alignItems: 'center',
+    width: 320,
   },
   buttonText: {
-    textAlign: 'center',
     color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 16,
+    textShadowColor: '#000',
+    textAlign: 'center',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
   imagePreview: {
     width: 100,
     height: 100,
     marginVertical: 10,
     alignSelf: 'center',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+  },
+  imagePickerText: {
+    color: '#007BFF',
+    fontSize: 16,
+  },
+  imagePicker: {
+    marginBottom: 20,
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
   },
 });
 

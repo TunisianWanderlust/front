@@ -80,7 +80,7 @@ const UserProfileScreen = ({ navigation }) => {
 
   const handleLikeToggle = async (publicationId, isLiked) => {
     if (!userId) {
-      Alert.alert('Erreur', 'Vous devez être connecté pour aimer une publication.');
+     // Alert.alert('Erreur', 'Vous devez être connecté pour aimer une publication.');
       return;
     }
 
@@ -97,7 +97,7 @@ const UserProfileScreen = ({ navigation }) => {
         [publicationId]: updatedLikeCount.likeCount,
       }));
 
-      Alert.alert('Succès', isLiked ? 'Vous avez retiré votre like.' : 'Vous avez aimé la publication.');
+      //Alert.alert('Succès', isLiked ? 'Vous avez retiré votre like.' : 'Vous avez aimé la publication.');
     } catch (error) {
       Alert.alert('Erreur', error.message);
     }

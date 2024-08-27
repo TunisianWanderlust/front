@@ -90,14 +90,14 @@ export default function PublicationList({ route, navigation }) {
 
   const handleLikeDislike = async (publicationId) => {
     if (!user) {
-      Alert.alert('Vous devez être connecté pour liker ou ne pas liker une publication.');
+     // Alert.alert('Vous devez être connecté pour liker ou ne pas liker une publication.');
       return;
     }
 
     try {
       if (userLikes[publicationId]) {
         await removeLike(publicationId, user.id);
-        Alert.alert('Succès', 'Vous avez retiré votre like.');
+       // Alert.alert('Succès', 'Vous avez retiré votre like.');
         setLikeCounts(prev => ({
           ...prev,
           [publicationId]: (prev[publicationId] || 0) - 1
@@ -107,7 +107,7 @@ export default function PublicationList({ route, navigation }) {
         if (result.message === 'Vous avez déjà aimé cette publication') {
           Alert.alert('Déjà aimé', result.message);
         } else {
-          Alert.alert('Succès', 'Vous avez aimé cette publication.');
+          //Alert.alert('Succès', 'Vous avez aimé cette publication.');
           setLikeCounts(prev => ({
             ...prev,
             [publicationId]: (prev[publicationId] || 0) + 1
