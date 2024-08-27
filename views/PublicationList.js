@@ -105,7 +105,7 @@ export default function PublicationList({ route, navigation }) {
       } else {
         const result = await addLike(publicationId, user.id);
         if (result.message === 'Vous avez déjà aimé cette publication') {
-          Alert.alert('Déjà aimé', result.message);
+         // Alert.alert('Déjà aimé', result.message);
         } else {
           //Alert.alert('Succès', 'Vous avez aimé cette publication.');
           setLikeCounts(prev => ({
@@ -121,7 +121,7 @@ export default function PublicationList({ route, navigation }) {
       }));
     } catch (error) {
       console.error('Erreur lors de la gestion du like/dislike :', error.message);
-      Alert.alert('Erreur', 'Impossible de mettre à jour le like.');
+      //Alert.alert('Erreur', 'Impossible de mettre à jour le like.');
     }
   };
 

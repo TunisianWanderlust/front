@@ -154,9 +154,9 @@ const UserProfileScreen = ({ navigation }) => {
               onDismiss={() => setVisibleMenu(false)}
               anchor={<IconButton icon="dots-vertical" size={24} onPress={() => setVisibleMenu(!visibleMenu)} />}
             >
-              <Menu.Item onPress={() => handleMenuOption('UpdateProfile')} title="Mettre à jour le profil" />
+              <Menu.Item onPress={() => handleMenuOption('UpdateProfile')} title="Modifier le profil" />
               <Divider />
-              <Menu.Item onPress={() => handleMenuOption('ChangePassword')} title="Changer le mot de passe" />
+              <Menu.Item onPress={() => handleMenuOption('ChangePassword')} title="Changer de mot de passe" />
               <Divider />
               <Menu.Item onPress={() => handleMenuOption('Logout')} title="Se déconnecter" />
             </Menu>

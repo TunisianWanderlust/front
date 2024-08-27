@@ -134,7 +134,7 @@ export default function UpdateProfileScreen({ route }) {
         ]}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Modifier Votre Profil </Text>
+          <Text style={styles.title}>Modifier Le Profil </Text>
 
           <PaperTextInput
             style={styles.input}
@@ -205,7 +205,7 @@ export default function UpdateProfileScreen({ route }) {
                 end={{ x: 1, y: 1 }}
                 style={styles.gradientButton}
               >
-                <Text style={styles.buttonText}>Mettre à jour </Text>
+                <Text style={styles.buttonText}>Enregistrer </Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>

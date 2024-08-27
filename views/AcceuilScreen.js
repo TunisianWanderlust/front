@@ -139,7 +139,7 @@ export default function AcceuilScreen({ navigation }) {
               {showSubMenu && (
                 <>
                   <Menu.Item
-                    title="Mettre à jour le profil"
+                    title="Modifier le profil"
                     onPress={() => {
                       closeMenu();
                       navigation.navigate('UpdateProfile', { userId: user.id });
@@ -147,7 +147,7 @@ export default function AcceuilScreen({ navigation }) {
                     style={styles.subMenuItem}
                   />
                   <Menu.Item
-                    title="Changer le mot de passe"
+                    title="Changer de mot de passe"
                     onPress={() => {
                       closeMenu();
                       navigation.navigate('ChangePassword', { userId: user.id });
@@ -185,7 +185,7 @@ export default function AcceuilScreen({ navigation }) {
                 end={{ x: 1, y: 1 }}
                 style={styles.gradientButton}
               >
-                <Text style={styles.buttonText}>c'est partie</Text>
+                <Text style={styles.buttonText}>Suggestions</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -196,7 +196,7 @@ export default function AcceuilScreen({ navigation }) {
                 end={{ x: 1, y: 1 }}
                 style={styles.gradientButton}
               >
-                <Text style={styles.buttonText}>voir categorie</Text>
+                <Text style={styles.buttonText}>Découvrir</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>

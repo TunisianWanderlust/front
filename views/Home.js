@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ImageBackground, Text, TouchableOpacity } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
+
 const Home = ({ navigation }) => {
   return (
     <ImageBackground
@@ -19,7 +20,7 @@ const Home = ({ navigation }) => {
           style={styles.gradient}
         >
           <View style={styles.container}>
-            <Text style={styles.title}></Text>
+            <Text style={styles.title}>Découvrez et partagez les trésors cachés de la Tunisie !</Text>
           </View>
         </LinearGradient>
       </BlurView>
@@ -82,17 +83,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
+    color: '#bdbdbd',
+    //color: '#fff',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    fontWeight: '600',
+    textShadowColor: '#333',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
+    /*fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#fff',
+    textAlign: 'center', // Center the text horizontally*/
   },
   buttonContainer: {
-    position: 'absolute',  // This will position the buttons absolutely
-    bottom: 20,            // Position them 20 units from the bottom
-    left: 0,               // Align to the left side
-    right: 0,              // Align to the right side
-    alignItems: 'center',  // Center align the buttons
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   gradientButton: {
     borderRadius: 200,
