@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
   },
   categoryImage: {
     width: '100%',
-    height: 150,
+    height: 230,
     justifyContent: 'flex-end',
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 10,
+    padding: 5,
   },
   categoryDescription: {
     fontSize: 16,

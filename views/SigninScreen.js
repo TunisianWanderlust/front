@@ -1,16 +1,32 @@
-
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform } from 'react-native';
-import { TextInput as PaperTextInput, Button as PaperButton } from 'react-native-paper';
-import LinearGradient from 'react-native-linear-gradient'; 
+import { TextInput as PaperTextInput } from 'react-native-paper';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { signin } from '../services/UserService';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; 
 import { UserContext } from './UserC'; 
 import UserModel from '../models/User';
+
+// Composants d'icônes avec paramètres par défaut
+const EmailIcon = ({ color = "#507BE4", size = 20 }) => (
+  <Icon name="email" size={size} color={color} />
+);
+
+const LockIcon = ({ color = "#507BE4", size = 20 }) => (
+  <Icon name="lock" size={size} color={color} />
+);
+
+const EyeIcon = ({ onPress, isVisible, color = "#507BE4", size = 20 }) => (
+  <TouchableOpacity onPress={onPress}>
+    <Icon name={isVisible ? "visibility" : "visibility-off"} size={size} color={color} />
+  </TouchableOpacity>
+);
 
 export default function SigninScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false); 
   const { login } = useContext(UserContext); 
 
   const handleSignin = async () => {
@@ -53,7 +69,6 @@ export default function SigninScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ImageBackground source={require('../assets/cc.png')} style={styles.background}>
-        {/*<Text style={styles.heading}>Connectez-vous !</Text>*/}
         <View style={styles.formContainer}>
           <PaperTextInput
             style={styles.input}
@@ -63,8 +78,8 @@ export default function SigninScreen({ navigation }) {
             keyboardType="email-address"
             mode="outlined"
             label="Email"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
-            roundness: 100  }}
+            left={<PaperTextInput.Icon icon={() => <EmailIcon />} />}
+            theme={{ colors: { primary: '#507BE4', underlineColor: 'transparent' }, roundness: 100 }}
           />
 
           <PaperTextInput
@@ -72,11 +87,12 @@ export default function SigninScreen({ navigation }) {
             value={password}
             onChangeText={setPassword}
             placeholder="Entrez votre mot de passe"
-            secureTextEntry
+            secureTextEntry={!passwordVisible} 
             mode="outlined"
             label="Mot de passe"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
-            roundness: 100  }}
+            left={<PaperTextInput.Icon icon={() => <LockIcon />} />}
+            right={<PaperTextInput.Icon icon={() => <EyeIcon onPress={() => setPasswordVisible(!passwordVisible)} isVisible={passwordVisible} />} />}
+            theme={{ colors: { primary: '#507BE4', underlineColor: 'transparent' }, roundness: 100 }}
           />
 
           <TouchableOpacity style={styles.button} onPress={handleSignin}>
@@ -128,35 +144,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 200,
   },
-  heading: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#3FA9ED',
-    marginBottom: 16,
-    alignItems: 'center',
-  },
   input: {
     height: 50,
     marginBottom: 29,
     width: '100%',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center', // Pour centrer les boutons horizontalement
-    alignItems: 'center', // Pour centrer les boutons verticalement
-    marginBottom: 10,
-  },
   button: {
-    marginHorizontal: 5, // Pour ajouter un espace entre les boutons
+    marginHorizontal: 5,
   },
- /* button: {
-    marginTop: 16,
-    borderRadius: 200,
-    paddingVertical: 12,
-    paddingHorizontal: 74,
-    height: 64,
-    justifyContent: 'center',
-  },*/
   gradientButton: {
     borderRadius: 200,
     padding: 15,
@@ -166,6 +161,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#000',
+    textAlign: 'center',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
   signUpButton: {
     marginTop: 20,

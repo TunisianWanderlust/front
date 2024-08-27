@@ -113,13 +113,19 @@ const UserProfileScreen = ({ navigation }) => {
         navigation.navigate('ChangePassword', { userId: user.id });
         break;
       case 'Logout':
-        await logout();
-        navigation.navigate('Signin');
+        try {
+          await logout(); // Ensure logout is async and properly handled
+          console.log('Déconnexion réussie, navigation vers Signin...');
+          navigation.navigate('Signin');
+        } catch (error) {
+          console.error('Erreur lors de la déconnexion:', error.message);
+        }
         break;
       default:
         break;
     }
   };
+  
 
   if (loading) {
     return <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />;
@@ -134,7 +140,7 @@ const UserProfileScreen = ({ navigation }) => {
       ListHeaderComponent={
         <View style={styles.userHeader}>
           <Image
-            source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }}
+            source={{ uri: user.image.replace('127.0.0.1', '192.168.74.1') }}
             style={styles.userImage}
             onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)}
           />
@@ -224,7 +230,7 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
     <Animated.View style={[styles.publicationCard, animatedStyle]}>
       <View style={styles.cardHeader}>
         <Image 
-          source={{ uri: userImage.replace('127.0.0.1', '192.168.1.21') }} 
+          source={{ uri: userImage.replace('127.0.0.1', '192.168.74.1') }} 
           style={styles.userIma}
           onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
         />
@@ -243,7 +249,7 @@ const PublicationCard = memo(({ userImage, userName, publicationId, publicationI
         </Menu>
       </View>
       <Image 
-        source={{ uri: publicationImage.replace('127.0.0.1', '192.168.1.21') }} 
+        source={{ uri: publicationImage.replace('127.0.0.1', '192.168.74.1') }} 
         style={styles.publicationImage}
         onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
       />

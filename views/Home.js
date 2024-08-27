@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, ImageBackground, Text, TouchableOpacity } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
-
 const Home = ({ navigation }) => {
   return (
     <ImageBackground
@@ -21,7 +20,6 @@ const Home = ({ navigation }) => {
         >
           <View style={styles.container}>
             <Text style={styles.title}></Text>
-            <View style={{ flex: 1 }} />
           </View>
         </LinearGradient>
       </BlurView>
@@ -33,6 +31,8 @@ const Home = ({ navigation }) => {
         >
           <LinearGradient
             colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
             <Text style={styles.buttonText}>S'inscrire</Text>
@@ -41,16 +41,17 @@ const Home = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('Signin')} 
+          onPress={() => navigation.navigate('Signin')}
         >
           <LinearGradient
             colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.gradientButton}
           >
             <Text style={styles.buttonText}>Se connecter</Text>
           </LinearGradient>
         </TouchableOpacity>
-
       </View>
     </ImageBackground>
   );
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
@@ -87,27 +88,36 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    height: 115, 
+    position: 'absolute',  // This will position the buttons absolutely
+    bottom: 20,            // Position them 20 units from the bottom
+    left: 0,               // Align to the left side
+    right: 0,              // Align to the right side
+    alignItems: 'center',  // Center align the buttons
   },
   gradientButton: {
     borderRadius: 200,
     padding: 15,
-    width: 320,
+    width: 250,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 8,
   },
   button: {
-    borderRadius: 77,
-    overflow: 'hidden',
+    marginVertical: 5,
+    marginHorizontal: 5,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    textAlign: 'center', 
+    fontWeight: 'bold',
+    textShadowColor: '#000',
+    textAlign: 'center',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
 });
 

@@ -15,6 +15,12 @@ import { updateProfile } from '../services/UserService';
 import { launchImageLibrary } from 'react-native-image-picker';
 import UserModel from '../models/User';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// Icônes comme composants
+const UserIcon = () => <Icon name="person" size={20} color="#507BE4" />;
+const MailIcon = () => <Icon name="email" size={20} color="#507BE4" />;
+const PhoneIcon = () => <Icon name="phone" size={20} color="#507BE4" />;
 
 export default function UpdateProfileScreen({ route }) {
   const { userId } = route.params;
@@ -128,7 +134,7 @@ export default function UpdateProfileScreen({ route }) {
         ]}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Mettre à jour votre profil </Text>
+          <Text style={styles.title}>Modifier Votre Profil </Text>
 
           <PaperTextInput
             style={styles.input}
@@ -137,7 +143,8 @@ export default function UpdateProfileScreen({ route }) {
             onChangeText={setFullName}
             label="Nom et prénom"
             mode="outlined"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            left={<PaperTextInput.Icon icon={UserIcon} />}
+            theme={{ colors: { primary: '#507BE4', underlineColor: 'transparent' },
             roundness: 100 }}
           />
 
@@ -149,7 +156,8 @@ export default function UpdateProfileScreen({ route }) {
             keyboardType="email-address"
             label="E-mail"
             mode="outlined"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            left={<PaperTextInput.Icon icon={MailIcon} />}
+            theme={{ colors: { primary: '#507BE4', underlineColor: 'transparent' },
             roundness: 100 }}
           />
 
@@ -162,21 +170,22 @@ export default function UpdateProfileScreen({ route }) {
             maxLength={15}
             label="Numéro de téléphone"
             mode="outlined"
-            theme={{ colors: { primary: '#6200ee', underlineColor: 'transparent' },
+            left={<PaperTextInput.Icon icon={PhoneIcon} />}
+            theme={{ colors: { primary: '#507BE4', underlineColor: 'transparent' },
             roundness: 100 }}
           />
 
-<View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
-            <LinearGradient
-              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradientButton}
-            >
-              <Text style={styles.buttonText}>Choose Image</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
+              <LinearGradient
+                colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>Choisir Image</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           {/* Image display */}
@@ -188,17 +197,17 @@ export default function UpdateProfileScreen({ route }) {
               />
             </View>
           )}
- <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
-            <LinearGradient
-              colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradientButton}
-            >
-              <Text style={styles.buttonText}>Mettre à jour </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
+              <LinearGradient
+                colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>Mettre à jour </Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
       </Animated.View>
@@ -257,8 +266,12 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    textAlign: 'center',
     fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#000',
+    textAlign: 'center',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
   centeredImageContainer: {
     alignItems: 'center',

@@ -90,7 +90,7 @@ const AddPublication = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.userContainer}>
           <Image 
-            source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
+            source={{ uri: user.image.replace('127.0.0.1', '192.168.74.1') }} 
             style={styles.userImage}
             onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
           />
@@ -190,9 +190,18 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     backgroundColor: '#fff',
   },
+  /*buttonText: {
+    color: '#fff',
+    fontSize: 18,
+  },*/
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#000',
+    textAlign: 'center',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
   image: {
     width: '100%',

@@ -141,7 +141,7 @@ export default function PublicationList({ route, navigation }) {
     <ScrollView style={styles.container}>
       <View style={styles.userHeader}>
         <Image 
-          source={{ uri: user.image.replace('127.0.0.1', '192.168.1.21') }} 
+          source={{ uri: user.image.replace('127.0.0.1', '192.168.74.1') }} 
           style={styles.userImage}
           onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
         />
@@ -153,7 +153,7 @@ export default function PublicationList({ route, navigation }) {
         <View key={item._id} style={styles.publicationCard}>
           <View style={styles.cardHeader}>
             {item.userId.image ? (
-              <Image source={{ uri: item.userId.image.replace('127.0.0.1', '192.168.1.21') }} style={styles.userImage} />
+              <Image source={{ uri: item.userId.image.replace('127.0.0.1', '192.168.74.1') }} style={styles.userImage} />
             ) : (
               <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.userImage} />
             )}
@@ -175,7 +175,7 @@ export default function PublicationList({ route, navigation }) {
           </View>
           {item.image ? (
             <Image 
-              source={{ uri: item.image.replace('127.0.0.1', '192.168.1.21') }} 
+              source={{ uri: item.image.replace('127.0.0.1', '192.168.74.1') }} 
               style={styles.publicationImage}
               onError={(e) => console.log('Erreur lors du chargement de l\'image :', e.nativeEvent.error)} 
             />

@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
 import { Appbar, Menu, Divider, ActivityIndicator } from 'react-native-paper';
@@ -65,7 +64,7 @@ export default function AcceuilScreen({ navigation }) {
           }
 
           if (data.image) {
-            const imageUrl = data.image.replace('127.0.0.1', '192.168.1.21');
+            const imageUrl = data.image.replace('127.0.0.1', '192.168.74.1');
             setImageMessage(`Image récupérée avec succès : ${imageUrl}`);
             console.log(`Image récupérée avec succès : ${imageUrl}`);
             setVilleDetails({ ...data, image: imageUrl });
@@ -172,38 +171,36 @@ export default function AcceuilScreen({ navigation }) {
           {loading && <ActivityIndicator size="large" color="#0000ff" />}
           {error && <Text style={styles.error}>{error}</Text>}
 
-          <View style={styles.villeContainer}>
+          {/* Description Container */}
+          <View style={styles.descriptionContainer}>
             <Text style={styles.villeDescription}>{villeDetails.description}</Text>
-            
-            {/* Existing "c'est partie" button */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PublicationList', { nomVille: villeDetails.nom })}>
-                <LinearGradient
-                  colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientButton}
-                >
-                  <Text style={styles.buttonText}>c'est partie</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-
-            {/* New "voir categorie" button */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CategoriesScreen', { nomVille: villeDetails.nom })}>
-                <LinearGradient
-                  colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientButton}
-                >
-                  <Text style={styles.buttonText}>voir categorie</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-
           </View>
+
+          {/* Button Container */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PublicationList', { nomVille: villeDetails.nom })}>
+              <LinearGradient
+                colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>c'est partie</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CategoriesScreen', { nomVille: villeDetails.nom })}>
+              <LinearGradient
+                colors={['#37A9B4', '#5CC7D2', '#89A6ED', '#507BE4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>voir categorie</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
         </ImageBackground>
       )}
     </View>
@@ -241,22 +238,22 @@ const styles = StyleSheet.create({
     height: 50,
     width: '70%',
   },
-  villeContainer: {
+  descriptionContainer: {
     flex: 1,
-    justifyContent: 'center', // Centrally align the content
+    justifyContent: 'center', // Center vertically
     alignItems: 'center', // Center horizontally
-    padding: 16,
+    paddingHorizontal: 16,
+    marginTop: -100, // Adjust this value if needed to position the description
   },
   villeDescription: {
     fontSize: 22,
     color: '#bdbdbd',
     textAlign: 'center',
-    marginTop: 180,
     fontStyle: 'italic',
-    fontWeight: '600', // Semi-bold text
-    textShadowColor: '#333', // Shadow color
-    textShadowOffset: { width: 2, height: 2 }, // More pronounced offset
-    textShadowRadius: 4, // Wider radius for a softer shadow
+    fontWeight: '600',
+    textShadowColor: '#333',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   error: {
     color: 'red',
@@ -265,8 +262,15 @@ const styles = StyleSheet.create({
     marginVertical: 10, // Add some spacing between buttons
     alignItems: 'center',
     width: '100%',
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
+  /*buttonContainer: {
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },*/
   button: {
+    marginVertical: 5,
     marginHorizontal: 5,
   },
   gradientButton: {
@@ -281,6 +285,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 8,
   },
+  /*
+  buttonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+  },*/
   buttonText: {
     color: '#fff',
     fontSize: 18,
@@ -290,4 +300,3 @@ const styles = StyleSheet.create({
     textShadowRadius: 5,
   },
 });
-

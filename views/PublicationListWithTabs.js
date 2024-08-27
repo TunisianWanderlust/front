@@ -93,8 +93,8 @@ const PublicationListWithTabs = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 60,
-    paddingVertical: 5,
+    height: 70,
+    paddingVertical: 1,
     // Ajustez le fond ou d'autres styles de la barre ici si nécessaire
   },
   addButton: {
